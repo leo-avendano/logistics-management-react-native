@@ -18,20 +18,23 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        {/* La primera pantalla en la pila será la inicial por defecto */}
+      <Stack screenOptions={{
+        headerShown: true,
+        headerStyle: {
+          backgroundColor: colorScheme === 'dark' ? '#000' : '#fff',
+        },
+        headerTintColor: colorScheme === 'dark' ? '#fff' : '#000',
+      }}>
         <Stack.Screen
-          name="index" 
+          name="index"
           options={{
             title: 'Inicio',
-           
           }}
         />
-
         <Stack.Screen
-          name="register" 
+          name="register/index"
           options={{
-            title: 'Registrarse', 
+            title: 'Registrarse',
           }}
         />
       </Stack>

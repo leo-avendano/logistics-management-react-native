@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
-import { Link, router } from 'expo-router'; // O usa router.push
+import { Link, router } from 'expo-router';
 
 // import { IconSymbol } from '@/components/ui/IconSymbol'; // Si necesitas íconos aquí
 
@@ -13,15 +13,15 @@ export default function HomeScreen() { // Renombrado para claridad, o mantenlo c
       </Text>
 
       {/* Opción 1: Usando Link */}
-      <Link href="/explore" style={styles.linkButton}>
-        <Text style={styles.linkText}>Ir a Explorar (Link)</Text>
+      <Link href="/register" style={styles.linkButton}>
+        <Text style={styles.linkText}>Ir a Registro (Link)</Text>
       </Link>
 
       {/* Opción 2: Usando router.push con un Button */}
       <View style={styles.buttonContainer}>
         <Button
-          title="Ir a register (Button)"
-          onPress={() => router.push('/register')}
+          title="Ir a Registro (Button)"
+          onPress={() => router.push("/register")}
         />
       </View>
       {/* Aquí tu lógica para Firebase, etc. */}

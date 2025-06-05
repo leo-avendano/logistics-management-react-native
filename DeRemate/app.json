@@ -4,7 +4,7 @@
     "slug": "DeRemate",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/DePedidosLogo.png",
     "scheme": "deremate",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,

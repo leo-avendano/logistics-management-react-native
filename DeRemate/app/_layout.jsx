@@ -3,8 +3,9 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated'; 
-
+import { Navbar } from '../components/Navbar' 
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { View, StyleSheet } from 'react-native';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -16,29 +17,56 @@ export default function RootLayout() {
     return null;
   }
 
+  const screenOptions = {
+    animation: 'fade',
+    headerShown: true,
+    contentStyle: {
+      backgroundColor: colorScheme === 'dark' ? '#000' : '#fff',
+    },
+    headerTintColor: colorScheme === 'dark' ? '#fff' : '#000',
+  };
+
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack screenOptions={{
-        headerShown: true,
-        headerStyle: {
-          backgroundColor: colorScheme === 'dark' ? '#000' : '#fff',
-        },
-        headerTintColor: colorScheme === 'dark' ? '#fff' : '#000',
-      }}>
-        <Stack.Screen
-          name="index"
-          options={{
-            title: 'Inicio',
-          }}
-        />
-        <Stack.Screen
-          name="register/index"
-          options={{
-            title: 'Registrarse',
-          }}
-        />
-      </Stack>
-      <StatusBar style="auto" />
+      <View style={styles.container}>
+        <Stack screenOptions={screenOptions}>
+          <Stack.Screen
+            name="index"
+            options={{
+              title: 'Inicio',
+            }}
+          />
+          <Stack.Screen
+            name="register/index"
+            options={{
+              title: 'Registrarse',
+            }}
+          />
+          <Stack.Screen
+            name="main/index"
+            options={{
+              title: 'Home',
+              // headerShown: false
+            }}
+          />
+          <Stack.Screen
+            name="record/index"
+            options={{
+              title: 'Historial',
+              // headerShown: false
+            }}
+          />
+        </Stack>
+        <Navbar/>
+        <StatusBar style="auto" />
+      </View>
     </ThemeProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    position: 'relative',
+  },
+});

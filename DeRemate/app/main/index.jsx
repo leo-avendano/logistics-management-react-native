@@ -7,41 +7,12 @@ import {
   Alert,
   Dimensions
 } from 'react-native';
-import { router } from 'expo-router';
-import { signOut } from 'firebase/auth';
-import { auth } from '../../config/firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
+
 
 const { width } = Dimensions.get('window');
 
 export default function MainScreen() {
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      router.replace('/');
-    } catch (error) {
-      console.error('Logout error:', error);
-      Alert.alert('Error', 'Error al cerrar sesión');
-    }
-  };
-
-  const confirmLogout = () => {
-    Alert.alert(
-      'Cerrar Sesión',
-      '¿Estás seguro de que quieres cerrar sesión?',
-      [
-        {
-          text: 'Cancelar',
-          style: 'cancel',
-        },
-        {
-          text: 'Cerrar Sesión',
-          onPress: handleLogout,
-          style: 'destructive',
-        },
-      ]
-    );
-  };
 
   return (
     <View style={styles.container}>
@@ -51,9 +22,6 @@ export default function MainScreen() {
           <Ionicons name="cube-outline" size={40} color="#FFC107" />
           <Text style={styles.logoText}>DeRemate</Text>
         </View>
-        <TouchableOpacity style={styles.logoutButton} onPress={confirmLogout}>
-          <Ionicons name="log-out-outline" size={24} color="#666" />
-        </TouchableOpacity>
       </View>
 
       {/* Welcome Section */}
@@ -78,12 +46,6 @@ export default function MainScreen() {
           <Text style={styles.featureTitle}>Rutas Disponibles</Text>
           <Text style={styles.featureDescription}>Encuentra las mejores rutas</Text>
         </TouchableOpacity>
-
-        <TouchableOpacity style={styles.featureCard}>
-          <Ionicons name="time-outline" size={40} color="#FF9800" />
-          <Text style={styles.featureTitle}>Historial</Text>
-          <Text style={styles.featureDescription}>Revisa tu historial de envíos</Text>
-        </TouchableOpacity>
       </View>
     </View>
   );
@@ -99,7 +61,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 24,
-    paddingTop: 60,
+    paddingTop: 20,
     paddingBottom: 20,
     backgroundColor: '#FFFFFF',
     shadowColor: '#000',

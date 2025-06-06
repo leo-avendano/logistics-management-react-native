@@ -94,7 +94,7 @@ export const Navbar = () => {
           style={button.isQr ? styles.buttonQr : styles.button}
           onPress={button.action}
         >
-          <Ionicons name={button.name} size={button.isQr ? '48' : '26'} color='#ffffff'/>
+          <Ionicons name={button.name} size={button.isQr ? 48 : 26} color='#ffffff'/>
         </TouchableOpacity>
       ))}
     </View>

@@ -11,7 +11,7 @@ export default function LogoComponent({ size = 'large' }) {
       <View style={[styles.logoPlaceholder, { width: logoSize, height: logoSize, borderRadius: logoSize / 2 }]}>
         <Image source={require('../assets/images/DePedidosLogo.png')} style={{width: iconSize*1.30, height: iconSize}}/>
       </View>
-      <Text style={[styles.logoText, { fontSize: textSize }]}>DeRemate</Text>
+      <Text style={[styles.logoText, { fontSize: Number(textSize) }]}>DeRemate</Text>
     </View>
   );
 }

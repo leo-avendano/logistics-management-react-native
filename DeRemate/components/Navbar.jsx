@@ -66,13 +66,15 @@ export const Navbar = () => {
     { 
       id: 2, 
       name: 'location-outline', 
-      action: () => handleNavigation('rutes') 
+      action: () => handleNavigation('rutes'),
+      disabled: true
     },
     { 
       id: 3, 
       name: 'qr-code-outline', 
       action: () => handleNavigation('qr-scanner'),
-      isQr: true 
+      isQr: true,
+      disabled: true
     },
     { 
       id: 4, 
@@ -92,7 +94,8 @@ export const Navbar = () => {
         <TouchableOpacity
           key={button.id}
           style={button.isQr ? styles.buttonQr : styles.button}
-          onPress={button.action}
+          onPress={button.disabled ? null : button.action}
+          disabled={button.disabled}
         >
           <Ionicons name={button.name} size={button.isQr ? 48 : 26} color='#ffffff'/>
         </TouchableOpacity>

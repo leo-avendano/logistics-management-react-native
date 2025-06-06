@@ -6,6 +6,7 @@ import 'react-native-reanimated';
 import { Navbar } from '../components/Navbar' 
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { View, StyleSheet } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -27,40 +28,44 @@ export default function RootLayout() {
   };
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <View style={styles.container}>
-        <Stack screenOptions={screenOptions}>
-          <Stack.Screen
-            name="index"
-            options={{
-              title: 'Inicio',
-            }}
-          />
-          <Stack.Screen
-            name="register/index"
-            options={{
-              title: 'Registrarse',
-            }}
-          />
-          <Stack.Screen
-            name="main/index"
-            options={{
-              title: 'Home',
-              // headerShown: false
-            }}
-          />
-          <Stack.Screen
-            name="record/index"
-            options={{
-              title: 'Historial',
-              // headerShown: false
-            }}
-          />
-        </Stack>
-        <Navbar/>
-        <StatusBar style="auto" />
-      </View>
-    </ThemeProvider>
+    <SafeAreaProvider>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <SafeAreaView style={styles.container}>
+          <Stack screenOptions={screenOptions}>
+            <Stack.Screen
+              name="index"
+              options={{
+                title: 'Inicio',
+                headerShown: false
+              }}
+            />
+            <Stack.Screen
+              name="register/index"
+              options={{
+                title: 'Registrarse',
+                headerShown: false
+              }}
+            />
+            <Stack.Screen
+              name="main/index"
+              options={{
+                title: 'Home',
+                headerShown: false
+              }}
+            />
+            <Stack.Screen
+              name="record/index"
+              options={{
+                title: 'Historial',
+                headerShown: false
+              }}
+            />
+          </Stack>
+          <Navbar/>
+          <StatusBar style="dark" />
+        </SafeAreaView>
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }
 

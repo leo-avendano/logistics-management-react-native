@@ -18,7 +18,8 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.logistics_management_react_native.DeRemate"
+      "package": "com.logistics_management_react_native.DeRemate",
+      "permissions": ["CAMERA"]
     },
     "web": {
       "bundler": "metro",

@@ -67,7 +67,7 @@ export default function DescriptionScreen() {
             <HeaderContainer style={{paddingHorizontal: 8, justifyContent: 'start'}}>
                 <BackButton routeBack={'record'} />
                 <View style={styles.logoContainer}>
-                    <Ionicons name="cube-outline" size={40} color="#FFC107" />
+                    <Ionicons name="map-outline" size={40} color="#FFC107" />
                     <View style={styles.titleContainer}>
                     <Text style={styles.logoText}>Detalles de la ruta {route.uuid}</Text>
                     <StatusText status={route.estado} style={styles.statusMargin} />

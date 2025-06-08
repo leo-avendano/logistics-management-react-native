@@ -77,7 +77,6 @@ export const Navbar = () => {
       name: 'qr-code-outline', 
       action: () => handleNavigation('qr-scanner'),
       isQr: true,
-      disabled: true
     },
     { 
       id: 4, 

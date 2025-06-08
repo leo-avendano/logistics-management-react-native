@@ -61,12 +61,15 @@ export default function RootLayout() {
               }}
             />
             <Stack.Screen
-              name="record/description"
+              name="qr-scanner/index"
               options={{
-                title: 'Detalles de la Ruta',
+                title: 'Escáner QR',
                 headerShown: false
               }}
             />
+
+            <Stack.Screen name="paquete/[id]" options={{ headerShown: false }} />
+
           </Stack>
           <Navbar/>
           <StatusBar style="dark" />

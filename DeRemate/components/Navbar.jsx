@@ -51,7 +51,6 @@ export const Navbar = () => {
 
   const handleNavigation = (screen) => {
     const targetRoute = `/${screen}`;
-
     if (currentRoute === targetRoute) return;
     if (screen === 'index') {
       confirmLogout();
@@ -69,8 +68,7 @@ export const Navbar = () => {
     { 
       id: 2, 
       name: 'location-outline', 
-      action: () => handleNavigation('rutes'),
-      disabled: true
+      action: () => handleNavigation('routes'),
     },
     { 
       id: 3, 
@@ -115,7 +113,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    height: 54,
+    height: 62,
     backgroundColor: '#FFC107',
     paddingHorizontal: 20,
     zIndex: 120,

@@ -112,7 +112,7 @@ export default function RecordScreen() {
       {/* Header */}
       <HeaderContainer>
         <View style={styles.logoContainer}>
-          <Ionicons name="cube-outline" size={40} color="#FFC107" />
+          <Ionicons name="calendar-outline" size={40} color="#FFC107" />
           <Text style={styles.logoText}>Historial de Rutas</Text>
         </View>
       </HeaderContainer>

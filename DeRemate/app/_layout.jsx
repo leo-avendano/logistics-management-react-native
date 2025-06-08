@@ -67,9 +67,14 @@ export default function RootLayout() {
                 headerShown: false
               }}
             />
-
+            <Stack.Screen
+              name="routes/index"
+              options={{
+                title: 'Rutas Disponibles',
+                headerShown: false
+              }}
+            />
             <Stack.Screen name="paquete/[id]" options={{ headerShown: false }} />
-
           </Stack>
           <Navbar/>
           <StatusBar style="dark" />

@@ -61,6 +61,13 @@ export default function RootLayout() {
               }}
             />
             <Stack.Screen
+              name="record/description"
+              options={{
+                title: 'Detalles de la Ruta',
+                headerShown: false
+              }}
+            />
+            <Stack.Screen
               name="qr-scanner/index"
               options={{
                 title: 'Escáner QR',

@@ -8,12 +8,13 @@ import {
   Dimensions
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
 
 const { width } = Dimensions.get('window');
 
 export default function MainScreen() {
-
+  const router = useRouter();
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -35,13 +36,15 @@ export default function MainScreen() {
 
       {/* Feature Cards */}
       <View style={styles.featuresContainer}>
-        <TouchableOpacity style={styles.featureCard}>
+        <TouchableOpacity style={styles.featureCard}
+        onPress={() => router.replace('/record')}>
           <Ionicons name="cube-outline" size={40} color="#FFC107" />
           <Text style={styles.featureTitle}>Gestión de Paquetes</Text>
           <Text style={styles.featureDescription}>Administra tus envíos y paquetes</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.featureCard}>
+        <TouchableOpacity style={styles.featureCard}
+        onPress={() => router.replace('/routes')}>
           <Ionicons name="location-outline" size={40} color="#2196F3" />
           <Text style={styles.featureTitle}>Rutas Disponibles</Text>
           <Text style={styles.featureDescription}>Encuentra las mejores rutas</Text>

@@ -70,7 +70,7 @@ export default function RecordScreen() {
   const renderItem = ({ item }) => (
     <TouchableOpacity 
       style={styles.packageCard}
-      onPress={() => router.push({
+      onPress={() => router.replace({
         pathname: "/record/description",
         params: { route: JSON.stringify(item) }
       })}

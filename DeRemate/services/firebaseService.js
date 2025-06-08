@@ -1,7 +1,6 @@
-// firebaseService.js
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
-import { db } from '../config/firebaseConfig'; // Asegúrate de importar tu configuración de Firebase
+import { db } from '../config/firebaseConfig';
 
 
 export const getRutasByRepartidor = async () => {
@@ -18,12 +17,24 @@ export const getRutasByRepartidor = async () => {
       where('repartidorUserID', '==', user.uid)
     );
 
-    
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    const order = {
+      'pendiente': 1,
+      'en progreso': 2,
+      'completado': 3,
+      'cancelado': 4
+    };
+
+    return querySnapshot.docs
+      .map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }))
+      .sort((a, b) => {
+        const orderA = order[a.estado] || 999;
+        const orderB = order[b.estado] || 999;
+        return orderA - orderB;
+      });
     
   } catch (error) {
     console.error('Error al obtener rutas del repartidor:', error);
@@ -59,6 +70,30 @@ export const getAllRutas = async () => {
     }));
   } catch (error) {
     console.error('Error al obtener todas las rutas:', error);
+    throw error;
+  }
+};
+
+export const getPackageInfo = async (rutaId) => {
+  try {
+    const q = query(
+      collection(db, 'Paquete'),
+      where('rutaRef', '==', rutaId)
+    );
+    
+    const querySnapshot = await getDocs(q);
+    
+    if (!querySnapshot.empty) {
+      const doc = querySnapshot.docs[0];
+      return {
+        id: doc.id,
+        ...doc.data()
+      };
+    }
+    return null; 
+    
+  } catch (error) {
+    console.error('Error al obtener la ruta:', error);
     throw error;
   }
 };

@@ -11,7 +11,10 @@ import {
   ActivityIndicator
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { getRutasByRepartidor } from '../../services/firebaseService';
+import { StatusText } from '../../components/StatusText';
+import { HeaderContainer } from '../../components/HeaderContainer';
 
 const { width, height } = Dimensions.get('window');
 
@@ -23,6 +26,7 @@ export default function RecordScreen() {
   const [selectedFilter, setSelectedFilter] = useState('Todos');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const router = useRouter();
   
   const filters = ['Todos', 'Pendiente', 'En Progreso', 'Completado', 'Cancelado'];
 
@@ -64,41 +68,20 @@ export default function RecordScreen() {
   };
 
   const renderItem = ({ item }) => (
-    <View style={styles.packageCard}>
+    <TouchableOpacity 
+      style={styles.packageCard}
+      onPress={() => router.push({
+        pathname: "/record/description",
+        params: { route: JSON.stringify(item) }
+      })}
+    >
       <View style={styles.packageHeader}>
         <Text style={styles.trackingNumber}>ID: {item.uuid}</Text>
-        <Text style={[
-          styles.status,
-          item.estado === 'completado' ? styles.delivered : 
-          item.estado === 'en progreso' ? styles.inProgress : 
-          item.estado === 'pendiente' ? styles.pending :
-          item.estado === 'cancelado' ? styles.canceled :
-          NaN
-        ]}>
-          {item.estado?.toUpperCase() || 'ESTADO DESCONOCIDO'}
-        </Text>
+        <StatusText status={item.estado}/>
       </View>
       
       <Text style={styles.carrier}>Cliente: {item.cliente}</Text>
-      
-      {item.destino && (
-        <Text style={styles.date}>
-          📍 Destino: Lat: {item.destino.lat?.toFixed(6) || 'N/A'}, 
-          Lon: {item.destino.lon?.toFixed(6) || 'N/A'}
-        </Text>
-      )}
-      
-      {item.fechas && (
-        <View style={styles.datesContainer}>
-          <Text style={styles.date}>
-            🚀 Inicio: {item.fechas.inicioRepartir || 'No especificada'}
-          </Text>
-          <Text style={styles.date}>
-            ✅ Fin: {item.fechas.finRepartir || 'No especificada'}
-          </Text>
-        </View>
-      )}
-    </View>
+    </TouchableOpacity>
   );
 
   if (loading) {
@@ -127,12 +110,12 @@ export default function RecordScreen() {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
+      <HeaderContainer>
         <View style={styles.logoContainer}>
           <Ionicons name="cube-outline" size={40} color="#FFC107" />
           <Text style={styles.logoText}>Historial de Rutas</Text>
         </View>
-      </View>
+      </HeaderContainer>
 
       {/* Barra de búsqueda y filtros */}
       <View style={styles.searchContainer}>
@@ -203,22 +186,17 @@ export default function RecordScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-  },
-  header: {
-    padding: 20,
-    backgroundColor: '#f8f8f8',
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    backgroundColor: '#F5F5F5',
   },
   logoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   logoText: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginLeft: 10,
+    color: '#000',
+    marginLeft: 8,
   },
   searchContainer: {
     flexDirection: 'row',
@@ -229,6 +207,7 @@ const styles = StyleSheet.create({
     flex: 1,
     borderWidth: 1,
     borderColor: '#ddd',
+    backgroundColor: '#FFFFFF',
     borderRadius: 8,
     padding: 10,
     marginRight: 10,
@@ -237,11 +216,11 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   listContent: {
-    padding: 15,
+    paddingHorizontal: 15,
     paddingBottom: 80,
   },
   packageCard: {
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#FFFFFF',
     borderRadius: 8,
     padding: 15,
     marginBottom: 10,
@@ -256,28 +235,6 @@ const styles = StyleSheet.create({
   trackingNumber: {
     fontWeight: 'bold',
     fontSize: 16,
-  },
-  status: {
-    fontSize: 14,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  delivered: {
-    backgroundColor: '#e6f7ee',
-    color: '#10b981',
-  },
-  inProgress: {
-    backgroundColor: '#eff6ff',
-    color: '#3b82f6',
-  },
-  pending: {
-    backgroundColor: '#fef3c7',
-    color: '#d97706',
-  },
-  canceled: {
-    backgroundColor: '#fee2e2',
-    color: '#ef4444',
   },
   carrier: {
     color: '#666',
@@ -338,6 +295,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#ffffff'
   },
   errorContainer: {
     flex: 1,

@@ -60,6 +60,13 @@ export default function RootLayout() {
                 headerShown: false
               }}
             />
+            <Stack.Screen
+              name="record/description"
+              options={{
+                title: 'Detalles de la Ruta',
+                headerShown: false
+              }}
+            />
           </Stack>
           <Navbar/>
           <StatusBar style="dark" />

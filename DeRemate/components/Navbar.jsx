@@ -4,6 +4,7 @@ import { signOut, onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../config/firebaseConfig';
 import { useRouter, useSegments } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 
 export const Navbar = () => {
   const router = useRouter();
@@ -31,31 +32,33 @@ export const Navbar = () => {
   };
 
   const confirmLogout = () => {
-      Alert.alert(
-        'Cerrar Sesión',
-        '¿Estás seguro de que quieres cerrar sesión?',
-        [
-          {
-            text: 'Cancelar',
-            style: 'cancel',
-          },
-          {
-            text: 'Cerrar Sesión',
-            onPress: handleLogout,
-            style: 'destructive',
-          },
-        ]
-      );
-    };
+    Alert.alert(
+      'Cerrar Sesión',
+      '¿Estás seguro de que quieres cerrar sesión?',
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Cerrar Sesión',
+          onPress: handleLogout,
+          style: 'destructive',
+        },
+      ]
+    );
+  };
 
   const handleNavigation = (screen) => {
-  const targetRoute = `/${screen}`;
-  
-  if (currentRoute === targetRoute) {
-    return;
-  }
-  router.replace(targetRoute);
-};
+    const targetRoute = `/${screen}`;
+
+    if (currentRoute === targetRoute) return;
+    if (screen === 'index') {
+      confirmLogout();
+      return;
+    }
+    router.replace(targetRoute);
+  };
 
   const buttons = [
     { 
@@ -84,7 +87,7 @@ export const Navbar = () => {
     { 
       id: 5, 
       name: 'exit-outline', 
-      action: confirmLogout 
+      action: () => handleNavigation('index') 
     },
   ];
 
@@ -105,39 +108,39 @@ export const Navbar = () => {
 };
 
 const styles = StyleSheet.create({
-    navbarContainer: {
-      position: 'absolute',
-      bottom: 0,
-      left: 0,
-      right: 0,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      height: 54,
-      backgroundColor: '#FFC107',
-      paddingHorizontal: 20,
-      zIndex: 120,
-      paddingBottom: 12,
-      paddingHorizontal: 25,
-    },
-    button: {
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: 8,
-    },
-    buttonQr: {
-      bottom: 40,
-      backgroundColor: '#FFC107',
-      width: 72,
-      height: 72,
-      borderRadius: 36,
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginTop: 32,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 3 },
-      shadowOpacity: 0.3,
-      shadowRadius: 5,
-      elevation: 5,
-    },
-  });
+  navbarContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    height: 54,
+    backgroundColor: '#FFC107',
+    paddingHorizontal: 20,
+    zIndex: 120,
+    paddingBottom: 12,
+    paddingHorizontal: 25,
+  },
+  button: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 8,
+  },
+  buttonQr: {
+    bottom: 40,
+    backgroundColor: '#FFC107',
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 32,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+});

@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { CameraView, Camera, useCameraPermissions } from 'expo-camera';
-import { Button, Surface, IconButton } from 'react-native-paper';   // 👈  IconButton
+import { Camera, CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
-import { getDoc, doc } from 'firebase/firestore';
-import { db } from '../../config/firebaseConfig';
+import { doc, getDoc } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { Button, IconButton, Surface } from 'react-native-paper';
 import { useToast } from '../../components/ToastProvider';
+import { db } from '../../config/firebaseConfig';
 
 export default function QRScanner() {
   const router = useRouter();
   const [scanned, setScanned] = useState(false);
-  const [torch, setTorch] = useState(false);                         // 👈  nuevo estado
+  const [torch, setTorch] = useState(false);                         
   const [permission, requestPermission] = useCameraPermissions();
   
   const { showToast } = useToast();
@@ -58,7 +58,7 @@ export default function QRScanner() {
     <Surface style={styles.container}>
       <CameraView
         style={styles.camera}
-        enableTorch={torch}      // 👈  aquí se enciende/apaga
+        enableTorch={torch}     //prender / apagar
         barcodeScannerSettings={{
           barcodeTypes: Camera?.Constants?.BarCodeType?.qr ? [Camera.Constants.BarCodeType.qr] : [],
         }}
@@ -67,7 +67,7 @@ export default function QRScanner() {
         <View style={styles.overlay} />
         <View style={styles.scanFrame} />
 
-        {/* ----------  BOTÓN LINTERNA  ---------- */}
+        {/* linterna */}
         <View style={styles.buttonContainer}>
           <IconButton
             icon={torch ? 'flashlight-off' : 'flashlight'}

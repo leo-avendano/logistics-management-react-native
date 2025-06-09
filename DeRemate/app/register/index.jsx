@@ -16,6 +16,7 @@ import { router } from 'expo-router';
 import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from 'firebase/auth';
 import { auth } from '../../config/firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
+import LogoComponent from '../../components/LogoComponent';
 import { useToast } from '../../components/ToastProvider';
 
 const { width } = Dimensions.get('window');
@@ -149,10 +150,7 @@ export default function RegisterScreen() {
         <View style={styles.container}>
           {/* Logo Section */}
           <View style={styles.logoContainer}>
-            <View style={styles.logoPlaceholder}>
-              <Ionicons name="cube-outline" size={80} color="#FFC107" />
-            </View>
-            <Text style={styles.logoText}>DeRemate</Text>
+            <LogoComponent size="large" />
           </View>
 
           {/* Title Section */}

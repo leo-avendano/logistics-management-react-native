@@ -16,6 +16,7 @@ import { router } from 'expo-router';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../../config/firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
+import LogoComponent from '../../components/LogoComponent';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useToast } from '../../components/ToastProvider';
 
@@ -141,10 +142,7 @@ export default function RecoverScreen() {
         <View style={styles.container}>
           {/* Logo Section */}
           <View style={styles.logoContainer}>
-            <View style={styles.logoPlaceholder}>
-              <Ionicons name="cube-outline" size={80} color="#FFC107" />
-            </View>
-            <Text style={styles.logoText}>DeRemate</Text>
+            <LogoComponent size="large" />
           </View>
 
           {/* Title Section */}

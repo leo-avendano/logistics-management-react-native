@@ -7,11 +7,14 @@ import {
   Dimensions,
   FlatList,
   Modal,
-  ActivityIndicator
+  ActivityIndicator,
+  Alert,
+  ScrollView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { getRutasDisponibles, getPackageInfo } from '../../services/firebaseService';
+import { getRutasByStatusAndRepartidor, getPackageInfo } from '../../services/firebaseService';
+import { logisticsService } from '../../services/logisticsService';
 import { StatusText } from '../../components/StatusText';
 import { HeaderContainer } from '../../components/HeaderContainer';
 
@@ -24,24 +27,29 @@ export default function AvailableRoutesScreen() {
   const [selectedRoute, setSelectedRoute] = useState(null);
   const [routeDetails, setRouteDetails] = useState(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
+  const [currentFilter, setCurrentFilter] = useState('Todas');
+  const [showFilters, setShowFilters] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
   const router = useRouter();
+  
+  const filters = ['Todas', 'Disponible', 'Pendiente', 'En Progreso', 'Completado', 'Fallida'];
 
   useEffect(() => {
-    const fetchRutas = async () => {
-      try {
-        setLoading(true);
-        const rutasData = await getRutasDisponibles();
-        setRutas(rutasData);
-      } catch (err) {
-        console.error('Error al obtener rutas disponibles:', err);
-        setError('Error al cargar las rutas disponibles');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchRutas();
-  }, []);
+  }, [currentFilter]);
+
+  const fetchRutas = async () => {
+    try {
+      setLoading(true);
+      const rutasData = await getRutasByStatusAndRepartidor(currentFilter);
+      setRutas(rutasData);
+    } catch (err) {
+      console.error('Error al obtener rutas:', err);
+      setError('Error al cargar las rutas');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleRoutePress = async (route) => {
     setSelectedRoute(route);
@@ -57,21 +65,87 @@ export default function AvailableRoutesScreen() {
     }
   };
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity 
-      style={styles.packageCard}
-      onPress={() => handleRoutePress(item)}
-    >
-      <View style={styles.packageHeader}>
-        <Text style={styles.trackingNumber}>ID: {item.uuid}</Text>
-        <StatusText status={item.estado}/>
-      </View>
+  const handleAssignRoute = async (route) => {
+    try {
+      setActionLoading(true);
+      const userId = logisticsService.getCurrentUserId();
       
-      <Text style={styles.carrier}>Cliente: {item.cliente}</Text>
-      <Text style={styles.zoneText}>Destino:</Text>
-      <Text style={styles.zoneText}>  {item.destino.lat}  {item.destino.lon}</Text>
-    </TouchableOpacity>
-  );
+      if (!userId) {
+        Alert.alert('Error', 'Usuario no autenticado');
+        return;
+      }
+
+      await logisticsService.assignRouteToRepartidor(route.uuid, userId);
+      Alert.alert('Éxito', 'Ruta asignada correctamente');
+      setSelectedRoute(null);
+      fetchRutas(); // Refresh the list
+    } catch (error) {
+      console.error('Error assigning route:', error);
+      Alert.alert('Error', 'Error al asignar la ruta: ' + error.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleUnassignRoute = async (route) => {
+    try {
+      setActionLoading(true);
+      await logisticsService.unassignRouteFromRepartidor(route.uuid);
+      Alert.alert('Éxito', 'Ruta desasignada correctamente');
+      setSelectedRoute(null);
+      fetchRutas(); // Refresh the list
+    } catch (error) {
+      console.error('Error unassigning route:', error);
+      Alert.alert('Error', 'Error al desasignar la ruta: ' + error.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const getActionButton = (route) => {
+    if (!route || !route.estado) {
+      return null;
+    }
+    
+    const estado = route.estado.toLowerCase();
+    
+    switch (estado) {
+      case 'disponible':
+        return {
+          text: 'Reservar',
+          color: '#4CAF50',
+          action: () => handleAssignRoute(route)
+        };
+      case 'pendiente':
+        return {
+          text: 'Quitar',
+          color: '#ff6b6b',
+          action: () => handleUnassignRoute(route)
+        };
+      default:
+        return null;
+    }
+  };
+
+  const renderItem = ({ item }) => {
+    if (!item) return null;
+    
+    return (
+      <TouchableOpacity 
+        style={styles.packageCard}
+        onPress={() => handleRoutePress(item)}
+      >
+        <View style={styles.packageHeader}>
+          <Text style={styles.trackingNumber}>ID: {item.uuid || 'N/A'}</Text>
+          <StatusText status={item.estado || 'unknown'}/>
+        </View>
+        
+        <Text style={styles.carrier}>Cliente: {item.cliente || 'N/A'}</Text>
+        <Text style={styles.zoneText}>Destino:</Text>
+        <Text style={styles.zoneText}>  {item.destino?.lat || 'N/A'}  {item.destino?.lon || 'N/A'}</Text>
+      </TouchableOpacity>
+    );
+  };
 
   if (loading) {
     return (
@@ -102,8 +176,15 @@ export default function AvailableRoutesScreen() {
       <HeaderContainer>
         <View style={styles.logoContainer}>
           <Ionicons name="location-outline" size={40} color="#FFC107" />
-          <Text style={styles.logoText}>Rutas Disponibles</Text>
+          <Text style={styles.logoText}>Rutas</Text>
         </View>
+        <TouchableOpacity 
+          style={styles.filterButton}
+          onPress={() => setShowFilters(true)}
+        >
+          <Ionicons name="filter" size={24} color="#FFC107" />
+          <Text style={styles.filterText}>{currentFilter}</Text>
+        </TouchableOpacity>
       </HeaderContainer>
 
       {/* Lista de rutas */}
@@ -128,24 +209,24 @@ export default function AvailableRoutesScreen() {
           <View style={styles.modalContent}>
             {detailsLoading ? (
               <ActivityIndicator size="large" color="#FFC107" />
-            ) : (
+            ) : selectedRoute ? (
               <>
                 <Text style={styles.modalTitle}>Detalles de la Ruta</Text>
                 
                 <View style={styles.detailRow}>
                   <Text style={styles.detailLabel}>ID:</Text>
-                  <Text style={styles.detailValue}>{selectedRoute?.uuid}</Text>
+                  <Text style={styles.detailValue}>{selectedRoute.uuid || 'N/A'}</Text>
                 </View>
                 
                 <View style={styles.detailRow}>
                   <Text style={styles.detailLabel}>Cliente:</Text>
-                  <Text style={styles.detailValue}>{selectedRoute?.cliente}</Text>
+                  <Text style={styles.detailValue}>{selectedRoute.cliente || 'N/A'}</Text>
                 </View>
                 
                 <View style={styles.detailRow}>
                   <Text style={styles.detailLabel}>Coordenadas:</Text>
                   <Text style={styles.detailValue}>
-                    {selectedRoute?.destino.lat}, {selectedRoute?.destino.lon}
+                    {selectedRoute.destino?.lat || 'N/A'}, {selectedRoute.destino?.lon || 'N/A'}
                   </Text>
                 </View>
                 
@@ -168,14 +249,22 @@ export default function AvailableRoutesScreen() {
                   </>
                 )}
                 
-                <TouchableOpacity 
-                  style={styles.assignButton}
-                  onPress={() => {
-                    setSelectedRoute(null);
-                  }}
-                >
-                  <Text style={styles.assignButtonText}>Asignar</Text>
-                </TouchableOpacity>
+                {(() => {
+                  const actionButton = getActionButton(selectedRoute);
+                  return actionButton ? (
+                    <TouchableOpacity 
+                      style={[styles.assignButton, { backgroundColor: actionButton.color }]}
+                      onPress={actionButton.action}
+                      disabled={actionLoading}
+                    >
+                      {actionLoading ? (
+                        <ActivityIndicator color="white" />
+                      ) : (
+                        <Text style={styles.assignButtonText}>{actionButton.text}</Text>
+                      )}
+                    </TouchableOpacity>
+                  ) : null;
+                })()}
                 
                 <TouchableOpacity 
                   style={styles.closeButton}
@@ -184,7 +273,56 @@ export default function AvailableRoutesScreen() {
                   <Text style={styles.closeButtonText}>Cerrar</Text>
                 </TouchableOpacity>
               </>
-            )}
+            ) : null}
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal de filtros */}
+      <Modal
+        visible={showFilters}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowFilters(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.filterModalContent}>
+            <Text style={styles.modalTitle}>Filtrar Rutas</Text>
+            
+            <ScrollView style={styles.filterScrollView}>
+              {filters.map((filter) => (
+                <TouchableOpacity
+                  key={filter}
+                  style={[
+                    styles.filterOption,
+                    currentFilter === filter && styles.filterOptionSelected
+                  ]}
+                  onPress={() => {
+                    setCurrentFilter(filter);
+                    setShowFilters(false);
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.filterOptionText,
+                      currentFilter === filter && styles.filterOptionTextSelected
+                    ]}
+                  >
+                    {filter}
+                  </Text>
+                  {currentFilter === filter && (
+                    <Ionicons name="checkmark" size={20} color="#FFF" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+            
+            <TouchableOpacity 
+              style={styles.closeButton}
+              onPress={() => setShowFilters(false)}
+            >
+              <Text style={styles.closeButtonText}>Cerrar</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -200,6 +338,7 @@ const styles = StyleSheet.create({
     logoContainer: {
         flexDirection: 'row',
         alignItems: 'center',
+        flex: 1,
     },
     logoText: {
         fontSize: 20,
@@ -282,6 +421,22 @@ const styles = StyleSheet.create({
         flex: 1,
         color: '#666',
     },
+    filterButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(255, 193, 7, 0.1)',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: '#FFC107',
+    },
+    filterText: {
+        marginLeft: 5,
+        color: '#FFC107',
+        fontWeight: 'bold',
+        fontSize: 14,
+    },
     assignButton: {
         marginTop: 20,
         padding: 12,
@@ -303,6 +458,40 @@ const styles = StyleSheet.create({
     },
     closeButtonText: {
         color: 'white',
+        fontWeight: 'bold',
+    },
+    filterModalContent: {
+        width: width * 0.8,
+        maxHeight: height * 0.6,
+        backgroundColor: 'white',
+        borderRadius: 10,
+        padding: 20,
+    },
+    filterScrollView: {
+        maxHeight: height * 0.4,
+    },
+    filterOption: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 15,
+        marginVertical: 5,
+        backgroundColor: '#f8f9fa',
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#e9ecef',
+    },
+    filterOptionSelected: {
+        backgroundColor: '#FFC107',
+        borderColor: '#FFC107',
+    },
+    filterOptionText: {
+        fontSize: 16,
+        color: '#333',
+        fontWeight: '500',
+    },
+    filterOptionTextSelected: {
+        color: '#FFF',
         fontWeight: 'bold',
     },
     loadingContainer: {

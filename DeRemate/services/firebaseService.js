@@ -46,17 +46,98 @@ export const getRutasDisponibles = async () => {
   try {
     const q = query(
       collection(db, 'Ruta'),
-      where('estado', '==', 'disponible')
+      where('estado', '==', 'disponible'),
+      where('repartidorUserID', '==', '')
     );
 
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({
       id: doc.id,
+      uuid: doc.id, // Add uuid field for consistency with Android
       ...doc.data()
     }));
     
   } catch (error) {
     console.error('Error al obtener rutas disponibles:', error);
+    throw error;
+  }
+};
+
+export const getRutasByStatusAndRepartidor = async (estado) => {
+  try {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    
+    if (!user) {
+      throw new Error('Usuario no autenticado');
+    }
+
+    const repartidorUserID = user.uid;
+    let querySnapshot;
+
+    if (estado === 'Todas') {
+      // Get available routes (unassigned) and user's assigned routes
+      const disponibleQuery = query(
+        collection(db, 'Ruta'),
+        where('estado', '==', 'disponible'),
+        where('repartidorUserID', '==', '')
+      );
+      
+      const userRoutesQuery = query(
+        collection(db, 'Ruta'),
+        where('repartidorUserID', '==', repartidorUserID)
+      );
+      
+      const [disponibleSnapshot, userSnapshot] = await Promise.all([
+        getDocs(disponibleQuery),
+        getDocs(userRoutesQuery)
+      ]);
+      
+      const routes = [
+        ...disponibleSnapshot.docs.map(doc => ({
+          id: doc.id,
+          uuid: doc.id,
+          ...doc.data()
+        })),
+        ...userSnapshot.docs.map(doc => ({
+          id: doc.id,
+          uuid: doc.id,
+          ...doc.data()
+        }))
+      ];
+      
+      return routes;
+    } else {
+      // Get routes by specific status
+      const estadoFirebase = estado.toLowerCase();
+      
+      if (estadoFirebase === 'disponible') {
+        // Only show available routes that are unassigned
+        const q = query(
+          collection(db, 'Ruta'),
+          where('estado', '==', estadoFirebase),
+          where('repartidorUserID', '==', '')
+        );
+        querySnapshot = await getDocs(q);
+      } else {
+        // Show user's routes with specific status
+        const q = query(
+          collection(db, 'Ruta'),
+          where('estado', '==', estadoFirebase),
+          where('repartidorUserID', '==', repartidorUserID)
+        );
+        querySnapshot = await getDocs(q);
+      }
+      
+      return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        uuid: doc.id,
+        ...doc.data()
+      }));
+    }
+    
+  } catch (error) {
+    console.error('Error al obtener rutas por estado y repartidor:', error);
     throw error;
   }
 };

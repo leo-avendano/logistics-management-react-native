@@ -5,12 +5,12 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Dimensions
+  Dimensions,
+  Animated
 } from 'react-native';
 import { router } from 'expo-router';
 import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
@@ -20,6 +20,7 @@ import LogoComponent from '../components/LogoComponent';
 import { ValidationUtils } from '../utils/ValidationUtils';
 import { ToastMessages, getErrorMessage } from '../utils/ToastMessages';
 import { NetworkUtils } from '../utils/NetworkUtils';
+import { useToast } from '../components/ToastProvider';
 
 const { width } = Dimensions.get('window');
 
@@ -28,6 +29,11 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [inputErrors, setInputErrors] = useState({});
+  const shakeAnimation = new Animated.Value(0);
+  
+  const { showToast } = useToast();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -40,16 +46,33 @@ export default function LoginScreen() {
     return unsubscribe;
   }, []);
 
+  const shakeInputs = () => {
+    Animated.sequence([
+      Animated.timing(shakeAnimation, { toValue: 10, duration: 100, useNativeDriver: true }),
+      Animated.timing(shakeAnimation, { toValue: -10, duration: 100, useNativeDriver: true }),
+      Animated.timing(shakeAnimation, { toValue: 10, duration: 100, useNativeDriver: true }),
+      Animated.timing(shakeAnimation, { toValue: 0, duration: 100, useNativeDriver: true }),
+    ]).start();
+  };
+
+  const clearErrors = () => {
+    setInputErrors({});
+  };
+
   const handleLogin = async () => {
+    clearErrors();
+    
     const validation = ValidationUtils.validateLoginForm(email, password);
     if (!validation.isValid) {
-      Alert.alert('Error', validation.message);
+      setInputErrors({ general: true });
+      showToast(validation.message, 'error');
+      shakeInputs();
       return;
     }
 
     // Check network connectivity
     const isConnected = await NetworkUtils.checkNetworkAndShowError((message) => {
-      Alert.alert('Error', message);
+      showToast(message, 'error');
     });
     if (!isConnected) return;
 
@@ -59,28 +82,49 @@ export default function LoginScreen() {
       const user = userCredential.user;
 
       if (!user.emailVerified) {
-        Alert.alert('Error', ToastMessages.EMAIL_NOT_CONFIRMED);
+        showToast(ToastMessages.EMAIL_NOT_CONFIRMED, 'warning');
         await auth.signOut();
         return;
       }
 
+      // Success feedback
+      showToast('¡Bienvenido de vuelta!', 'success', 2000);
       router.replace('/main');
     } catch (error) {
-      console.error('Login error:', error);
-      const errorMessage = getErrorMessage(error.code) || ToastMessages.INVALID_LOGIN;
-      Alert.alert('Error', errorMessage);
+      console.log('🔐 Authentication Error Details:');
+      console.log('Error Code:', error.code);
+      console.log('Error Message:', error.message);
+      
+      const errorMessage = getErrorMessage(error.code || 'unknown');
+      console.log('User-friendly message:', errorMessage);
+      
+      // Set visual error state for inputs
+      setInputErrors({ 
+        email: error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential',
+        password: error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential',
+        general: true
+      });
+      
+      // Make sure we have a valid error message
+      const finalMessage = errorMessage || 'Error de autenticación. Verifica tus credenciales.';
+      console.log('Showing toast with message:', finalMessage);
+      
+      showToast(finalMessage, 'error');
+      shakeInputs();
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleSignIn = () => {
-    Alert.alert('Próximamente', 'Funcionalidad de Google Sign-In en desarrollo');
+    showToast('Funcionalidad de Google Sign-In en desarrollo', 'info');
   };
 
   const handleAppleSignIn = () => {
-    Alert.alert('Próximamente', 'Funcionalidad de Apple Sign-In en desarrollo');
+    showToast('Funcionalidad de Apple Sign-In en desarrollo', 'info');
   };
+
+
 
   if (initialLoading) {
     return (
@@ -107,29 +151,59 @@ export default function LoginScreen() {
           <Text style={styles.subtitle}>Ingresa tu email y contraseña para continuar</Text>
 
           {/* Email Input */}
-          <View style={styles.inputCard}>
+          <Animated.View 
+            style={[
+              styles.inputCard, 
+              inputErrors.email && styles.inputError,
+              { transform: [{ translateX: shakeAnimation }] }
+            ]}
+          >
             <TextInput
               style={styles.input}
               placeholder="Ejemplo@email.com"
               value={email}
-              onChangeText={setEmail}
+              onChangeText={(text) => {
+                setEmail(text);
+                if (inputErrors.email) clearErrors();
+              }}
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
             />
-          </View>
+          </Animated.View>
 
           {/* Password Input */}
-          <View style={styles.inputCard}>
-            <TextInput
-              style={styles.input}
-              placeholder="Contraseña"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              autoCapitalize="none"
-            />
-          </View>
+          <Animated.View 
+            style={[
+              styles.inputCard, 
+              inputErrors.password && styles.inputError,
+              { transform: [{ translateX: shakeAnimation }] }
+            ]}
+          >
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={[styles.input, styles.passwordInput]}
+                placeholder="Contraseña"
+                value={password}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  if (inputErrors.password) clearErrors();
+                }}
+                secureTextEntry={!showPassword}
+                autoCapitalize="none"
+              />
+              <TouchableOpacity
+                style={styles.eyeIcon}
+                onPress={() => setShowPassword(!showPassword)}
+              >
+                <Ionicons
+                  name={showPassword ? "eye-off" : "eye"}
+                  size={24}
+                  color="#666"
+                />
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
 
           {/* Login Button */}
           <TouchableOpacity 
@@ -178,6 +252,8 @@ export default function LoginScreen() {
           >
             <Text style={styles.linkText}>¿No tienes cuenta? Regístrate</Text>
           </TouchableOpacity>
+
+
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -304,5 +380,27 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#000',
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  passwordInput: {
+    flex: 1,
+  },
+  eyeIcon: {
+    padding: 8,
+  },
+  inputError: {
+    borderColor: '#F44336',
+    borderWidth: 2,
+    shadowColor: '#F44336',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
   },
 });

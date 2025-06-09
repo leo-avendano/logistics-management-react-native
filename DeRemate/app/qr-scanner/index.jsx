@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { CameraView, Camera, useCameraPermissions } from 'expo-camera';
 import { Button, Surface, IconButton } from 'react-native-paper';   // 👈  IconButton
 import { useRouter } from 'expo-router';
 import { getDoc, doc } from 'firebase/firestore';
 import { db } from '../../config/firebaseConfig';
+import { useToast } from '../../components/ToastProvider';
 
 export default function QRScanner() {
   const router = useRouter();
   const [scanned, setScanned] = useState(false);
   const [torch, setTorch] = useState(false);                         // 👈  nuevo estado
   const [permission, requestPermission] = useCameraPermissions();
+  
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (!permission?.granted) {
@@ -30,13 +33,14 @@ export default function QRScanner() {
       const snap = await getDoc(ref);
 
       if (!snap.exists()) {
-        Alert.alert('No encontrado', 'El paquete no existe.');
+        showToast('📦 El paquete no existe en el sistema', 'warning');
       } else {
+        showToast('✅ Paquete encontrado', 'success', 1500);
         router.push(`/paquete/${paqueteId}`);
       }
     } catch (err) {
       console.log('Error escaneo:', err);
-      Alert.alert('Error', 'QR inválido.');
+      showToast('❌ QR inválido. Intenta escanear nuevamente', 'error');
     } finally {
       setTimeout(() => setScanned(false), COOLDOWN_MS);
     }

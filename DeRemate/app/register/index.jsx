@@ -5,17 +5,18 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Dimensions
+  Dimensions,
+  Animated
 } from 'react-native';
 import { router } from 'expo-router';
 import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from 'firebase/auth';
 import { auth } from '../../config/firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
+import { useToast } from '../../components/ToastProvider';
 
 const { width } = Dimensions.get('window');
 
@@ -26,6 +27,10 @@ export default function RegisterScreen() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [inputErrors, setInputErrors] = useState({});
+  const shakeAnimation = new Animated.Value(0);
+  
+  const { showToast } = useToast();
 
   const isValidEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -38,28 +43,49 @@ export default function RegisterScreen() {
     return passwordRegex.test(password);
   };
 
+  const shakeInputs = () => {
+    Animated.sequence([
+      Animated.timing(shakeAnimation, { toValue: 10, duration: 100, useNativeDriver: true }),
+      Animated.timing(shakeAnimation, { toValue: -10, duration: 100, useNativeDriver: true }),
+      Animated.timing(shakeAnimation, { toValue: 10, duration: 100, useNativeDriver: true }),
+      Animated.timing(shakeAnimation, { toValue: 0, duration: 100, useNativeDriver: true }),
+    ]).start();
+  };
+
+  const clearErrors = () => {
+    setInputErrors({});
+  };
+
   const validateForm = () => {
+    clearErrors();
+    let errors = {};
+    let isValid = true;
+
     if (!email || !password || !confirmPassword) {
-      Alert.alert('Error', 'Complete todos los campos.');
-      return false;
+      showToast('Complete todos los campos.', 'error');
+      errors.general = true;
+      isValid = false;
+    } else if (!isValidEmail(email)) {
+      showToast('El email ingresado no es válido.', 'error');
+      errors.email = true;
+      isValid = false;
+    } else if (!isPasswordSecure(password)) {
+      showToast('La contraseña es muy débil. Debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas, números y símbolos.', 'error');
+      errors.password = true;
+      isValid = false;
+    } else if (password !== confirmPassword) {
+      showToast('Las contraseñas no coinciden.', 'error');
+      errors.confirmPassword = true;
+      errors.password = true;
+      isValid = false;
     }
 
-    if (!isValidEmail(email)) {
-      Alert.alert('Error', 'El email ingresado no es válido.');
-      return false;
+    if (!isValid) {
+      setInputErrors(errors);
+      shakeInputs();
     }
 
-    if (!isPasswordSecure(password)) {
-      Alert.alert('Error', 'La contraseña es muy débil. Debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas, números y símbolos.');
-      return false;
-    }
-
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Las contraseñas no coinciden.');
-      return false;
-    }
-
-    return true;
+    return isValid;
   };
 
   const handleRegister = async () => {
@@ -80,31 +106,35 @@ export default function RegisterScreen() {
       // Sign out the user after registration
       await auth.signOut();
 
-      Alert.alert(
-        'Registro exitoso', 
-        'Se ha enviado un correo de verificación a tu email. Por favor verifica tu cuenta antes de iniciar sesión.',
-        [
-          {
-            text: 'OK',
-            onPress: () => router.push('/confirmation')
-          }
-        ]
-      );
+      showToast('Se ha enviado un correo de verificación a tu email. Por favor verifica tu cuenta antes de iniciar sesión.', 'success', 5000);
+      
+      // Navigate after a short delay to let user read the message
+      setTimeout(() => {
+        router.push('/confirmation');
+      }, 1000);
+      
     } catch (error) {
       console.error('Registration error:', error);
       
-      let errorMessage = 'Hubo un error al registrarse: ';
+      let errorMessage = 'Hubo un error al registrarse';
+      let errorType = {};
+      
       if (error.code === 'auth/email-already-in-use') {
-        errorMessage = 'El correo electrónico ya está en uso';
+        errorMessage = 'Ya existe una cuenta con este correo electrónico';
+        errorType.email = true;
       } else if (error.code === 'auth/invalid-email') {
-        errorMessage = 'El correo electrónico no es válido';
+        errorMessage = 'El formato del correo electrónico no es válido';
+        errorType.email = true;
       } else if (error.code === 'auth/weak-password') {
-        errorMessage = 'La contraseña es demasiado débil';
-      } else if (error.message) {
-        errorMessage += error.message;
+        errorMessage = 'La contraseña debe tener al menos 6 caracteres';
+        errorType.password = true;
+      } else if (error.code === 'auth/network-request-failed') {
+        errorMessage = 'Error de conexión. Verifica tu internet e intenta nuevamente';
       }
       
-      Alert.alert('Error', errorMessage);
+      setInputErrors(errorType);
+      showToast(errorMessage, 'error');
+      shakeInputs();
     } finally {
       setLoading(false);
     }
@@ -130,26 +160,44 @@ export default function RegisterScreen() {
           <Text style={styles.subtitle}>Crea tu cuenta para comenzar</Text>
 
           {/* Email Input */}
-          <View style={styles.inputCard}>
+          <Animated.View 
+            style={[
+              styles.inputCard, 
+              inputErrors.email && styles.inputError,
+              { transform: [{ translateX: shakeAnimation }] }
+            ]}
+          >
             <TextInput
               style={styles.input}
               placeholder="Correo electrónico"
               value={email}
-              onChangeText={setEmail}
+              onChangeText={(text) => {
+                setEmail(text);
+                if (inputErrors.email) clearErrors();
+              }}
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
             />
-          </View>
+          </Animated.View>
 
           {/* Password Input */}
-          <View style={styles.inputCard}>
+          <Animated.View 
+            style={[
+              styles.inputCard, 
+              inputErrors.password && styles.inputError,
+              { transform: [{ translateX: shakeAnimation }] }
+            ]}
+          >
             <View style={styles.passwordContainer}>
               <TextInput
                 style={styles.passwordInput}
                 placeholder="Contraseña"
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  if (inputErrors.password) clearErrors();
+                }}
                 secureTextEntry={!showPassword}
                 autoCapitalize="none"
               />
@@ -164,16 +212,25 @@ export default function RegisterScreen() {
                 />
               </TouchableOpacity>
             </View>
-          </View>
+          </Animated.View>
 
           {/* Confirm Password Input */}
-          <View style={styles.inputCard}>
+          <Animated.View 
+            style={[
+              styles.inputCard, 
+              inputErrors.confirmPassword && styles.inputError,
+              { transform: [{ translateX: shakeAnimation }] }
+            ]}
+          >
             <View style={styles.passwordContainer}>
               <TextInput
                 style={styles.passwordInput}
                 placeholder="Confirmar contraseña"
                 value={confirmPassword}
-                onChangeText={setConfirmPassword}
+                onChangeText={(text) => {
+                  setConfirmPassword(text);
+                  if (inputErrors.confirmPassword) clearErrors();
+                }}
                 secureTextEntry={!showConfirmPassword}
                 autoCapitalize="none"
               />
@@ -188,7 +245,7 @@ export default function RegisterScreen() {
                 />
               </TouchableOpacity>
             </View>
-          </View>
+          </Animated.View>
 
           {/* Register Button */}
           <TouchableOpacity 
@@ -322,5 +379,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#000',
+  },
+  inputError: {
+    borderColor: '#F44336',
+    borderWidth: 2,
+    shadowColor: '#F44336',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
   },
 }); 

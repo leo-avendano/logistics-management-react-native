@@ -5,12 +5,15 @@ import { auth } from '../config/firebaseConfig';
 import { useRouter, useSegments } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, CommonActions } from '@react-navigation/native';
+import { useToast } from './ToastProvider';
 
 export const Navbar = () => {
   const router = useRouter();
   const segments = useSegments();
   const currentRoute = `/${segments.join('/')}`;
   const [user, setUser] = useState(null);
+  
+  const { showToast } = useToast();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -24,10 +27,11 @@ export const Navbar = () => {
   const handleLogout = async () => {
     try {
       await signOut(auth);
+      showToast('👋 Sesión cerrada correctamente', 'success', 2000);
       router.replace('/');
     } catch (error) {
       console.error('Logout error:', error);
-      Alert.alert('Error', 'Error al cerrar sesión');
+      showToast('Error al cerrar sesión. Intenta nuevamente.', 'error');
     }
   };
 

@@ -9,26 +9,40 @@ export const ToastMessages = {
   EMAIL_NOT_CONFIRMED: "Debe verificar su correo electrónico antes de ingresar",
   INVALID_LOGIN: "Usuario o contraseña equivocadas.",
   NETWORK_FAIL: "Hubo un problema de conexión a la red, inténtelo más tarde",
-  RECOVER_FAIL: "Fallo al enviar el correo de recuperación: "
+  RECOVER_FAIL: "Fallo al enviar el correo de recuperación: ",
+  LOGIN_FAILED: "No pudimos iniciar sesión con esas credenciales",
+  ACCOUNT_DISABLED: "Tu cuenta ha sido deshabilitada. Contacta al soporte",
+  INVALID_CREDENTIAL: "Las credenciales ingresadas no son válidas",
+  USER_DISABLED: "Esta cuenta ha sido deshabilitada temporalmente"
 };
 
 export const getErrorMessage = (errorCode) => {
   switch (errorCode) {
     case 'auth/email-already-in-use':
-      return 'El correo electrónico ya está en uso';
+      return 'Ya existe una cuenta con este correo electrónico';
     case 'auth/invalid-email':
-      return 'El correo electrónico no es válido';
+      return 'El formato del correo electrónico no es válido';
     case 'auth/weak-password':
-      return 'La contraseña es demasiado débil';
+      return 'La contraseña debe tener al menos 6 caracteres';
     case 'auth/user-not-found':
-      return 'No se encontró una cuenta con este correo';
+      return 'No encontramos una cuenta con este correo electrónico';
     case 'auth/wrong-password':
-      return 'Contraseña incorrecta';
+      return 'La contraseña ingresada es incorrecta';
+    case 'auth/invalid-credential':
+      return 'Correo o contraseña incorrectos. Verifica tus datos e intenta nuevamente';
+    case 'auth/user-disabled':
+      return ToastMessages.USER_DISABLED;
     case 'auth/too-many-requests':
-      return 'Demasiados intentos fallidos. Intenta más tarde';
+      return 'Has hecho demasiados intentos. Espera unos minutos e intenta nuevamente';
     case 'auth/network-request-failed':
       return ToastMessages.NETWORK_FAIL;
+    case 'auth/operation-not-allowed':
+      return 'El método de autenticación no está habilitado';
+    case 'auth/requires-recent-login':
+      return 'Por seguridad, necesitas iniciar sesión nuevamente';
+    case 'auth/account-exists-with-different-credential':
+      return 'Ya existe una cuenta con este correo usando otro método';
     default:
-      return 'Error desconocido';
+      return ToastMessages.LOGIN_FAILED;
   }
 }; 

@@ -8,7 +8,6 @@ import {
   FlatList,
   Modal,
   ActivityIndicator,
-  Alert,
   ScrollView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,6 +16,7 @@ import { getRutasByStatusAndRepartidor, getPackageInfo } from '../../services/fi
 import { logisticsService } from '../../services/logisticsService';
 import { StatusText } from '../../components/StatusText';
 import { HeaderContainer } from '../../components/HeaderContainer';
+import { useToast } from '../../components/ToastProvider';
 
 const { width, height } = Dimensions.get('window');
 
@@ -32,6 +32,7 @@ export default function AvailableRoutesScreen() {
   const [actionLoading, setActionLoading] = useState(false);
   const router = useRouter();
   
+  const { showToast } = useToast();
   const filters = ['Todas', 'Disponible', 'Pendiente', 'En Progreso', 'Completado', 'Fallida'];
 
   useEffect(() => {
@@ -71,17 +72,17 @@ export default function AvailableRoutesScreen() {
       const userId = logisticsService.getCurrentUserId();
       
       if (!userId) {
-        Alert.alert('Error', 'Usuario no autenticado');
+        showToast('Usuario no autenticado. Inicia sesión nuevamente.', 'error');
         return;
       }
 
       await logisticsService.assignRouteToRepartidor(route.uuid, userId);
-      Alert.alert('Éxito', 'Ruta asignada correctamente');
+      showToast('🚚 Ruta asignada correctamente', 'success');
       setSelectedRoute(null);
       fetchRutas(); // Refresh the list
     } catch (error) {
       console.error('Error assigning route:', error);
-      Alert.alert('Error', 'Error al asignar la ruta: ' + error.message);
+      showToast(`Error al asignar la ruta: ${error.message}`, 'error');
     } finally {
       setActionLoading(false);
     }
@@ -91,12 +92,12 @@ export default function AvailableRoutesScreen() {
     try {
       setActionLoading(true);
       await logisticsService.unassignRouteFromRepartidor(route.uuid);
-      Alert.alert('Éxito', 'Ruta desasignada correctamente');
+      showToast('✅ Ruta liberada correctamente', 'success');
       setSelectedRoute(null);
       fetchRutas(); // Refresh the list
     } catch (error) {
       console.error('Error unassigning route:', error);
-      Alert.alert('Error', 'Error al desasignar la ruta: ' + error.message);
+      showToast(`Error al liberar la ruta: ${error.message}`, 'error');
     } finally {
       setActionLoading(false);
     }

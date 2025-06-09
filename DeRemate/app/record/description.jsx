@@ -158,6 +158,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
+        marginBottom: 25,
     },
     loadingContainer: {
         flex: 1,
@@ -189,6 +190,7 @@ const styles = StyleSheet.create({
     },
     containerDetails: {
         padding: 20,
+        paddingBottom: 35,
     },
     logoContainer: {
         flexDirection: 'row',
@@ -228,7 +230,7 @@ const styles = StyleSheet.create({
     infoRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 8,
+        marginBottom: 7,
     },
     infoText: {
         marginLeft: 10,

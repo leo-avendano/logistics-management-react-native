@@ -1,13 +1,13 @@
+import { useColorScheme } from '@/hooks/useColorScheme';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated'; 
-import { Navbar } from '../components/Navbar' 
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { View, StyleSheet } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet } from 'react-native';
 import { PaperProvider } from 'react-native-paper';
+import 'react-native-reanimated';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { Navbar } from '../components/Navbar';
 import { ToastProvider } from '../components/ToastProvider';
 
 export default function RootLayout() {
@@ -82,6 +82,13 @@ export default function RootLayout() {
                   name="routes/index"
                   options={{
                     title: 'Rutas Disponibles',
+                    headerShown: false
+                  }}
+                />
+                <Stack.Screen
+                  name="recover/index"
+                  options={{
+                    title: 'Recuperar Contraseña',
                     headerShown: false
                   }}
                 />

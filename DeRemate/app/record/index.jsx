@@ -18,6 +18,49 @@ import { HeaderContainer } from '../../components/HeaderContainer';
 
 const { width, height } = Dimensions.get('window');
 
+const mockRutas = [
+  {
+    id: "1",
+    uuid: "0001",
+    cliente: "Juan Pérez",
+    estado: "completado",
+    destino: { lat: -34.6037, lon: -58.3816 },
+    fechas: { inicioRepartir: "2024-06-20 14:00", finRepartir: "2024-06-20 14:45" },
+    feedback: {
+      estrellas: 5,
+      comentario: "Entrega puntual, excelente.",
+      imagen: null
+    }
+  },
+  {
+    id: "2",
+    uuid: "0002",
+    cliente: "María Gómez",
+    estado: "completado",
+    destino: { lat: -34.6070, lon: -58.3789 },
+    fechas: { inicioRepartir: "2024-06-21 10:00", finRepartir: "2024-06-21 10:30" },
+    feedback: {
+      estrellas: 2,
+      comentario: "La caja llegó con un golpe.",
+      imagen: ["https://t4.ftcdn.net/jpg/04/98/53/89/360_F_498538992_5L52x5PH0j2bJk8bSM30PRbt79XfvAHH.jpg","https://c8.alamy.com/comp/2G55CPY/cardboard-package-that-was-damaged-in-shipping-and-has-a-crack-and-dents-2G55CPY.jpg"] ,
+    }
+  },
+  {
+    id: "3",
+    uuid: "0003",
+    cliente: "Carlos Díaz",
+    estado: "pendiente",
+    destino: { lat: -34.5997, lon: -58.3845 },
+    fechas: { inicioRepartir: "2024-06-22 16:00", finRepartir: "2024-06-22 16:50" },
+    feedback: {
+      estrellas: 4,
+      comentario: "Gracias por esperar, muy amable.",
+      imagen: null
+    }
+  }
+];
+
+
 export default function RecordScreen() {
   const [rutas, setRutas] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -35,6 +78,7 @@ export default function RecordScreen() {
       try {
         setLoading(true);
         const rutasData = await getRutasByRepartidor();
+        //const rutasData = mockRutas;
         setRutas(rutasData);
         setFilteredData(rutasData);
       } catch (err) {
@@ -68,7 +112,7 @@ export default function RecordScreen() {
   };
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={styles.packageCard}
       onPress={() => router.replace({
         pathname: "/record/description",
@@ -79,11 +123,22 @@ export default function RecordScreen() {
         <Text style={styles.trackingNumber}>ID: {item.uuid}</Text>
         <StatusText status={item.estado}/>
       </View>
-      
+
       <Text style={styles.carrier}>Cliente: {item.cliente}</Text>
+      {item.estado === "completado" && item.feedback && (
+        <View style={{ flexDirection: 'row', marginTop: 5 }}>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Ionicons
+              key={i}
+              name={i < item.feedback.estrellas ? "star" : "star-outline"}
+              size={18}
+              color="#FFD700"
+            />
+          ))}
+        </View>
+      )}
     </TouchableOpacity>
   );
-
   if (loading) {
     return (
       <View style={styles.loadingContainer}>

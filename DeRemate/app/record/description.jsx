@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {  
+import {
     View,
     Text,
     StyleSheet,
@@ -13,10 +13,14 @@ import { getPackageInfo } from '../../services/firebaseService';
 import { StatusText } from '../../components/StatusText';
 import { BackButton } from '../../components/BackButton';
 import { HeaderContainer } from '../../components/HeaderContainer';
+import { useRouter } from 'expo-router';
 
 export default function DescriptionScreen() {
+    const router = useRouter();
+
     const params = useLocalSearchParams();
     const route = JSON.parse(params.route);
+       const feedback = route.feedback;
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [rutaPackage, setRutaPackage] = useState(null);
@@ -51,7 +55,7 @@ export default function DescriptionScreen() {
             <View style={styles.errorContainer}>
                 <Ionicons name="alert-circle" size={50} color="#ff4444" />
                 <Text style={styles.errorText}>{error}</Text>
-                <TouchableOpacity 
+                <TouchableOpacity
                     style={styles.retryButton}
                     onPress={() => window.location.reload()}
                 >
@@ -71,6 +75,19 @@ export default function DescriptionScreen() {
                     <View style={styles.titleContainer}>
                     <Text style={styles.logoText}>Detalles de la ruta {route.uuid}</Text>
                     <StatusText status={route.estado} style={styles.statusMargin} />
+                      {route.estado === 'completado' && feedback && (
+                        <TouchableOpacity
+                          onPress={() => router.push({
+                            pathname: '/record/feedback',
+                            params: { feedback: JSON.stringify(feedback),
+
+                                    route: JSON.stringify(route),}
+                          })}
+                          style={ styles.feedbackButton }
+                        >
+                          <Text style={{ color: 'black', fontWeight: 'bold' }}>Ver Feedback</Text>
+                        </TouchableOpacity>
+                      )}
                     </View>
                 </View>
             </HeaderContainer>
@@ -117,7 +134,7 @@ export default function DescriptionScreen() {
                             <Ionicons name="scale-outline" size={20} color="#666" />
                             <Text style={styles.infoText}>Peso: {rutaPackage.peso} kg</Text>
                         </View>
-                        
+
                         {/* Tamaño del paquete */}
                         <Text style={[styles.sectionTitle, {marginTop: 15}]}>Dimensiones</Text>
                         <View style={styles.infoRow}>
@@ -132,7 +149,7 @@ export default function DescriptionScreen() {
                             <Ionicons name="resize-outline" size={20} color="#666" />
                             <Text style={styles.infoText}>Largo: {rutaPackage.tamaño?.largo} cm</Text>
                         </View>
-                        
+
                         {/* Ubicación en almacén */}
                         <Text style={[styles.sectionTitle, {marginTop: 15}]}>Ubicación en Almacén</Text>
                         <View style={styles.infoRow}>
@@ -158,7 +175,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
-        marginBottom: 25,
+        marginBottom: 0,
     },
     loadingContainer: {
         flex: 1,
@@ -237,4 +254,13 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#555',
     },
+    feedbackButton: {
+        backgroundColor: '#FFC107',
+        paddingHorizontal: 16,
+        paddingVertical: 4,
+        marginTop: 8,
+        borderRadius: 6,
+        justifyContent: 'center',
+        alignItems: 'center',
+        },
 });

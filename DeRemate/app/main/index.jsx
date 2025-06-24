@@ -1,6 +1,7 @@
 import React from 'react';
 import {
-  View,
+    View,
+  ScrollView,
   Text,
   TouchableOpacity,
   StyleSheet,
@@ -24,7 +25,7 @@ export default function MainScreen() {
           <Text style={styles.logoText}>DeRemate</Text>
         </View>
       </View>
-
+        <ScrollView style={{marginBottom:25}}>
       {/* Welcome Section */}
       <View style={styles.welcomeContainer}>
         <Ionicons name="checkmark-circle" size={80} color="#4CAF50" />
@@ -50,6 +51,7 @@ export default function MainScreen() {
           <Text style={styles.featureDescription}>Encuentra las mejores rutas</Text>
         </TouchableOpacity>
       </View>
+      </ScrollView>
     </View>
   );
 }

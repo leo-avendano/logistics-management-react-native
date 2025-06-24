@@ -94,7 +94,9 @@ export default function RootLayout() {
                 />
                 <Stack.Screen name="paquete/[id]" options={{ headerShown: false }} />
               </Stack>
-              <Navbar/>
+                  <SafeAreaView edges={['bottom']} style={styles.navbarContainer}>
+                    <Navbar />
+                  </SafeAreaView>
               <StatusBar style="dark" />
             </SafeAreaView>
           </ThemeProvider>

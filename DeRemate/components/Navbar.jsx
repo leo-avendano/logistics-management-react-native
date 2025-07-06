@@ -4,7 +4,6 @@ import { signOut, onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../config/firebaseConfig';
 import { useRouter, useSegments } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, CommonActions } from '@react-navigation/native';
 import { useToast } from './ToastProvider';
 
 export const Navbar = () => {
@@ -22,7 +21,8 @@ export const Navbar = () => {
     return () => unsubscribe();
   }, []);
 
-  if (!user) return null;
+  if (!user) return;
+  if (!auth.currentUser) return;
 
   const handleLogout = async () => {
     try {

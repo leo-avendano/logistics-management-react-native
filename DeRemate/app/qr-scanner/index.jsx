@@ -36,7 +36,7 @@ export default function QRScanner() {
         showToast('📦 El paquete no existe en el sistema', 'warning');
       } else {
         showToast('✅ Paquete encontrado', 'success', 1500);
-        router.push(`/paquete/${paqueteId}`);
+        router.push(`/paquete/${paqueteId}`); // paso como parametro el id del paquete
       }
     } catch (err) {
       console.log('Error escaneo:', err);

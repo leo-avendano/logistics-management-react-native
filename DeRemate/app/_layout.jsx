@@ -93,6 +93,8 @@ export default function RootLayout() {
                   }}
                 />
                 <Stack.Screen name="paquete/[id]" options={{ headerShown: false }} />
+                <Stack.Screen name="confirmation/index" options={{ headerShown: false }} />
+
               </Stack>
               <Navbar/>
               <StatusBar style="dark" />

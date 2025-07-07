@@ -12,11 +12,12 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { getRutasByStatusAndRepartidor, getPackageInfo } from '../../services/firebaseService';
+import { getRutasByStatusAndRepartidorWithProduct, getPackageInfo } from '../../services/firebaseService';
 import { logisticsService } from '../../services/logisticsService';
 import { StatusText } from '../../components/StatusText';
 import { HeaderContainer } from '../../components/HeaderContainer';
 import { useToast } from '../../components/ToastProvider';
+import { openGoogleMaps } from '../../services/openMapsService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -42,7 +43,7 @@ export default function AvailableRoutesScreen() {
   const fetchRutas = async () => {
     try {
       setLoading(true);
-      const rutasData = await getRutasByStatusAndRepartidor(currentFilter);
+      const rutasData = await getRutasByStatusAndRepartidorWithProduct(currentFilter);
       setRutas(rutasData);
     } catch (err) {
       console.error('Error al obtener rutas:', err);
@@ -128,22 +129,36 @@ export default function AvailableRoutesScreen() {
     }
   };
 
+  const mapViewButton = (route) => {
+  if (!route || !route.estado) return null;
+
+  const estado = route.estado.toLowerCase();
+  if (['disponible', 'en progreso', 'pendiente'].includes(estado)) {
+    return (
+      <TouchableOpacity
+        style={[styles.assignButton, { backgroundColor: '#4285F4', marginTop: 10 }]}
+        onPress={() => openGoogleMaps(route.destino)}
+      >
+        <Text style={styles.assignButtonText}>Ver Ruta en Maps</Text>
+      </TouchableOpacity>
+    );
+  }
+  return null;
+};
+
   const renderItem = ({ item }) => {
     if (!item) return null;
-    
     return (
       <TouchableOpacity 
         style={styles.packageCard}
         onPress={() => handleRoutePress(item)}
       >
         <View style={styles.packageHeader}>
-          <Text style={styles.trackingNumber}>ID: {item.uuid || 'N/A'}</Text>
+          <Text style={styles.trackingNumber}>{item.paquete?.nombre || 'No definido'} - {item.uuid || 'N/A'}</Text>
           <StatusText status={item.estado || 'unknown'}/>
         </View>
         
         <Text style={styles.carrier}>Cliente: {item.cliente || 'N/A'}</Text>
-        <Text style={styles.zoneText}>Destino:</Text>
-        <Text style={styles.zoneText}>  {item.destino?.lat || 'N/A'}  {item.destino?.lon || 'N/A'}</Text>
       </TouchableOpacity>
     );
   };
@@ -224,23 +239,16 @@ export default function AvailableRoutesScreen() {
                   <Text style={styles.detailValue}>{selectedRoute.cliente || 'N/A'}</Text>
                 </View>
                 
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Coordenadas:</Text>
-                  <Text style={styles.detailValue}>
-                    {selectedRoute.destino?.lat || 'N/A'}, {selectedRoute.destino?.lon || 'N/A'}
-                  </Text>
-                </View>
-                
                 {routeDetails && (
                   <>
                     <View style={styles.detailRow}>
                       <Text style={styles.detailLabel}>Nombre:</Text>
-                      <Text style={styles.detailValue}>{routeDetails.nombre || "Electrodoméstico"}</Text>
+                      <Text style={styles.detailValue}>{routeDetails.nombre || "No definido"}</Text>
                     </View>
 
                     <View style={styles.detailRow}>
                       <Text style={styles.detailLabel}>Peso:</Text>
-                      <Text style={styles.detailValue}>{routeDetails.peso || "33.49"} kg</Text>
+                      <Text style={styles.detailValue}>{routeDetails.peso || "No definido"} kg</Text>
                     </View>
 
                     <View style={styles.detailRow}>
@@ -249,7 +257,8 @@ export default function AvailableRoutesScreen() {
                     </View>
                   </>
                 )}
-                
+
+                {mapViewButton(selectedRoute)}
                 {(() => {
                   const actionButton = getActionButton(selectedRoute);
                   return actionButton ? (

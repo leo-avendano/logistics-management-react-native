@@ -44,7 +44,7 @@ export default function MainScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.featureCard}
-        onPress={() => router.replace('/routes')}>
+        onPress={() => router.replace('/delivery')}>
           <Ionicons name="location-outline" size={40} color="#2196F3" />
           <Text style={styles.featureTitle}>Rutas Disponibles</Text>
           <Text style={styles.featureDescription}>Encuentra las mejores rutas</Text>

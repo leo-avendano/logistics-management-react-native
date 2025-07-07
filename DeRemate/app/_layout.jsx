@@ -9,9 +9,11 @@ import 'react-native-reanimated';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Navbar } from '../components/Navbar';
 import { ToastProvider } from '../components/ToastProvider';
+import { useShowNavbar } from '../hooks/useShowNavbar';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const [showNavbar] = useShowNavbar();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
@@ -94,9 +96,9 @@ export default function RootLayout() {
                 />
                 <Stack.Screen name="paquete/[id]" options={{ headerShown: false }} />
                 <Stack.Screen name="confirmation/index" options={{ headerShown: false }} />
-
+                <Stack.Screen name="delivery/index" options={{ headerShown: false }} />
               </Stack>
-              <Navbar/>
+              {showNavbar && <Navbar />}
               <StatusBar style="dark" />
             </SafeAreaView>
           </ThemeProvider>

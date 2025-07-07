@@ -62,7 +62,7 @@ export default function DeliveryConfirmationScreen() {
       [
         {
           text: 'Entendido',
-          onPress: () => router.back()
+          onPress: () => router.replace('/main')
         }
       ]
     );
@@ -97,7 +97,7 @@ export default function DeliveryConfirmationScreen() {
               [
                 {
                   text: 'OK',
-                  onPress: () => router.back()
+                  onPress: () => router.replace('/main')
                 }
               ]
             );
@@ -115,7 +115,7 @@ export default function DeliveryConfirmationScreen() {
       [
         {
           text: 'OK',
-          onPress: () => router.back()
+          onPress: () => router.replace('/main')
         }
       ]
     );

@@ -86,6 +86,7 @@ export default function LoginScreen() {
         await auth.signOut();
         return;
       }
+      await saveExpoPushToken(user.uid);
 
       // Success feedback
       showToast('¡Bienvenido de vuelta!', 'success', 2000);

@@ -27,8 +27,10 @@ export default function QRScanner() {
     if (scanned) return;
     setScanned(true);
 
+
     try {
-      const { paqueteId } = JSON.parse(data);
+      const sanitized = data.replace(/\u00A0/g, ' ').trim();
+      const { paqueteId } = JSON.parse(sanitized);
       const ref = doc(db, 'Paquete', paqueteId);
       const snap = await getDoc(ref);
 

@@ -8,8 +8,8 @@ export const APP_CONFIG = {
       ASSIGN_ROUTE: '/api/route/assign',
       UNASSIGN_ROUTE: '/api/route/unassign',
       SET_ROUTE_IN_PROGRESS: '/api/route/start',
-      SET_ROUTE_DONE: '/api/route/done',
-      SET_ROUTE_CANCELED: '/api/route/canceled',
+      SET_ROUTE_DONE: '/api/package/confirm',
+      SET_ROUTE_CANCELED: '/api/route/cancel',
       HELLO: '/api/hello'
     }
   },

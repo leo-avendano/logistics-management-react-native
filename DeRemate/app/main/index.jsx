@@ -68,14 +68,14 @@ export default function MainScreen() {
         </View>
       </HeaderContainer>
 
-      {/* Welcome Section */}
+      {/* Welcome Section
       <View style={styles.welcomeContainer}>
         <Ionicons name="checkmark-circle" size={80} color="#4CAF50" />
         <Text style={styles.welcomeTitle}>¡Bienvenido!</Text>
         <Text style={styles.welcomeMessage}>
           Has iniciado sesión exitosamente en DeRemate. Tu aplicación de gestión logística está lista para usar.
         </Text>
-      </View>
+      </View> */}
 
       {loading ? (
         <Loading backgroundColor='#F5F5F5'/>
@@ -99,13 +99,7 @@ export default function MainScreen() {
               <Text style={styles.featureTitle}>Gestión de Paquetes</Text>
               <Text style={styles.featureDescription}>Administra tus envíos y paquetes</Text>
             </TouchableOpacity>
-
-            <TouchableOpacity style={styles.featureCard}
-              onPress={() => navigation.replace('Record')}>
-              <Ionicons name="cube-outline" size={40} color="#FFC107" />
-              <Text style={styles.featureTitle}>Gestión de Paquetes</Text>
-              <Text style={styles.featureDescription}>Administra tus envíos y paquetes</Text>
-            </TouchableOpacity>
+            
 
             <TouchableOpacity style={styles.featureCard}
               onPress={() => navigation.replace('Routes')}>

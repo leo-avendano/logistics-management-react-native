@@ -77,38 +77,56 @@ export default function MainScreen() {
         </Text>
       </View>
 
-      {loading ?(
+      {loading ? (
         <Loading backgroundColor='#F5F5F5'/>
-      ): (
+      ) : (
         <>
-        {/* Feature Cards */}
-        <ScrollView style={styles.featuresContainer}>
-          {hayRutasEnProgreso && (
+          {/* Feature Cards */}
+          <ScrollView style={styles.featuresContainer}>
+            {hayRutasEnProgreso && (
+              <TouchableOpacity style={styles.featureCard}
+                onPress={handleConfirmarLlegada}
+              >
+                <Ionicons name="checkmark-done-outline" size={40} color="#FFC107" />
+                <Text style={styles.featureTitle}>Confirmar llegada</Text>
+                <Text style={styles.featureDescription}>Confirma la llegada de tus paquetes en progreso</Text>
+              </TouchableOpacity>
+            )}
+
             <TouchableOpacity style={styles.featureCard}
-              onPress={handleConfirmarLlegada}
-            >
-              <Ionicons name="checkmark-done-outline" size={40} color="#FFC107" />
-              <Text style={styles.featureTitle}>Confirmar llegada</Text>
-              <Text style={styles.featureDescription}>Confirma la llegada de tus paquetes en progreso</Text>
+              onPress={() => navigation.replace('Record')}>
+              <Ionicons name="cube-outline" size={40} color="#FFC107" />
+              <Text style={styles.featureTitle}>Gestión de Paquetes</Text>
+              <Text style={styles.featureDescription}>Administra tus envíos y paquetes</Text>
             </TouchableOpacity>
-          )}
 
-          <TouchableOpacity style={styles.featureCard}
-            onPress={() => navigation.replace('Record')}>
-            <Ionicons name="cube-outline" size={40} color="#FFC107" />
-            <Text style={styles.featureTitle}>Gestión de Paquetes</Text>
-            <Text style={styles.featureDescription}>Administra tus envíos y paquetes</Text>
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.featureCard}
+              onPress={() => navigation.replace('Record')}>
+              <Ionicons name="cube-outline" size={40} color="#FFC107" />
+              <Text style={styles.featureTitle}>Gestión de Paquetes</Text>
+              <Text style={styles.featureDescription}>Administra tus envíos y paquetes</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity style={styles.featureCard}
-            onPress={() => navigation.replace('Routes')}>
-            <Ionicons name="location-outline" size={40} color="#2196F3" />
-            <Text style={styles.featureTitle}>Rutas Disponibles</Text>
-            <Text style={styles.featureDescription}>Encuentra las mejores rutas</Text>
-          </TouchableOpacity>
-        </ScrollView>
-        </>)}
-      <Navbar/>
+            <TouchableOpacity style={styles.featureCard}
+              onPress={() => navigation.replace('Routes')}>
+              <Ionicons name="location-outline" size={40} color="#2196F3" />
+              <Text style={styles.featureTitle}>Rutas Disponibles</Text>
+              <Text style={styles.featureDescription}>Encuentra las mejores rutas</Text>
+            </TouchableOpacity>
+
+            {/* Testing Button - Solo en desarrollo */}
+            {__DEV__ && (
+              <TouchableOpacity style={[styles.featureCard, styles.testCard]}
+                onPress={() => navigation.navigate('TestNotifications')}>
+                <Ionicons name="notifications-outline" size={40} color="#FF9800" />
+                <Text style={styles.featureTitle}>Test Notificaciones</Text>
+                <Text style={styles.featureDescription}>Probar push notifications</Text>
+              </TouchableOpacity>
+            )}
+          </ScrollView>
+          <Navbar/>
+        </>
+      )}
     </View>
   );
 }
@@ -205,6 +223,10 @@ const styles = StyleSheet.create({
     color: '#000',
     marginTop: 12,
     marginBottom: 4,
+  },
+  testCard: {
+    borderColor: '#FF9800',
+    borderWidth: 2,
   },
   featureDescription: {
     fontSize: 14,

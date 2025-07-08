@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { DarkTheme, DefaultTheme, NavigationContainer} from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -9,6 +9,9 @@ import { PaperProvider } from 'react-native-paper';
 import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ToastProvider } from './components/ToastProvider';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from './config/firebaseConfig';
+import { usePushNotifications } from './hooks/usePushNotifications';
 
 import LoginScreen from './app/index';
 import RegisterScreen from './app/register/index';
@@ -22,16 +25,47 @@ import PaqueteScreen from './app/paquete/[id]';
 import ConfirmationScreen from './app/confirmation/index';
 import DeliveryScreen from './app/delivery/index';
 import DeliveryConfirmationScreen from './app/delivery/confirmation';
+import TestNotificationsScreen from './app/test-notifications/index';
 
 const Stack = createStackNavigator();
 
 export default function App() { 
     const colorScheme = useColorScheme();
+    const navigationRef = useRef();
+    const [user, setUser] = useState(null);
+    const [authLoading, setAuthLoading] = useState(true);
+    
     const [loaded] = useFonts({
         SpaceMono: require('./assets/fonts/SpaceMono-Regular.ttf'), 
     });
 
-    if (!loaded) {
+    // Monitor authentication state
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+            console.log('🔐 Auth state changed:', firebaseUser ? 'User logged in' : 'User logged out');
+            setUser(firebaseUser);
+            setAuthLoading(false);
+        });
+
+        return unsubscribe;
+    }, []);
+
+
+
+    // 📱 Setup push notifications for authenticated users
+    const { isRegistered, pushToken, error } = usePushNotifications(navigationRef.current, user);
+
+    // Log push notification status
+    useEffect(() => {
+        if (user && isRegistered) {
+            console.log('✅ Push notifications ready for user:', user.uid);
+            console.log('📱 Push token:', pushToken);
+        } else if (user && error) {
+            console.warn('⚠️ Push notifications error:', error);
+        }
+    }, [user, isRegistered, pushToken, error]);
+
+    if (!loaded || authLoading) {
         return null;
     }
 
@@ -41,6 +75,7 @@ export default function App() {
                 <SafeAreaProvider>
                     <View style={styles.container}>
                         <NavigationContainer
+                            ref={navigationRef}
                             theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
                             <Stack.Navigator
                                 initialRouteName="Login"
@@ -65,6 +100,7 @@ export default function App() {
                                 <Stack.Screen name="Confirmation" component={ConfirmationScreen} />
                                 <Stack.Screen name="Delivery" component={DeliveryScreen} />
                                 <Stack.Screen name="DeliveryConfirmation" component={DeliveryConfirmationScreen} />
+                                <Stack.Screen name="TestNotifications" component={TestNotificationsScreen} />
                             </Stack.Navigator>
                             <StatusBar style="dark" />
                         </NavigationContainer>

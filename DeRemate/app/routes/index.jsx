@@ -23,7 +23,7 @@ import { Navbar } from '../../components/Navbar';
 
 const { width, height } = Dimensions.get('window');
 
-export default function AvailableRoutesScreen() {
+export default function AvailableRoutesScreen({ route, navigation }) {
   const [rutas, setRutas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -36,6 +36,26 @@ export default function AvailableRoutesScreen() {
 
   const { showToast } = useToast();
   const filters = ['Todas', 'Disponible', 'Pendiente', 'En Progreso', 'Completado', 'Fallida'];
+
+  // 📱 Handle notification parameters
+  useEffect(() => {
+    const params = route?.params;
+    if (params?.fromNotification) {
+      console.log('📍 Opened from notification:', params);
+      
+      // Show welcome message from notification
+      const message = params.destination 
+        ? `🚀 Nueva ruta disponible hacia ${params.destination}` 
+        : '🚀 Nueva ruta disponible';
+      
+      showToast(message, 'info', 3000);
+      
+      // Set filter to show available routes when coming from notification
+      if (params.routeId) {
+        setCurrentFilter('Disponible');
+      }
+    }
+  }, [route?.params, showToast]);
 
   useEffect(() => {
     fetchRutas();
@@ -150,16 +170,40 @@ export default function AvailableRoutesScreen() {
 
   const renderItem = ({ item }) => {
     if (!item) return null;
+    
+    // Check if this is the route from notification
+    const isFromNotification = route?.params?.fromNotification && 
+                               route?.params?.routeId === item.uuid;
+    
     return (
       <TouchableOpacity 
-        style={styles.packageCard}
+        style={[
+          styles.packageCard,
+          isFromNotification && styles.packageCardHighlighted
+        ]}
         onPress={() => handleRoutePress(item)}
       >
         <View style={styles.packageHeader}>
-          <Text style={styles.trackingNumber}>{item.paquete?.nombre || 'No definido'} - {item.uuid || 'N/A'}</Text>
+          <Text style={[
+            styles.trackingNumber,
+            isFromNotification && styles.trackingNumberHighlighted
+          ]}>
+            {item.paquete?.nombre || 'No definido'} - {item.uuid || 'N/A'}
+            {isFromNotification && ' 🔔'}
+          </Text>
           <StatusText status={item.estado || 'unknown'}/>
         </View>
-        <Text style={styles.carrier}>Cliente: {item.cliente || 'N/A'}</Text>
+        <Text style={[
+          styles.carrier,
+          isFromNotification && styles.carrierHighlighted
+        ]}>
+          Cliente: {item.cliente || 'N/A'}
+        </Text>
+        {isFromNotification && (
+          <Text style={styles.notificationBadge}>
+            📱 Desde notificación
+          </Text>
+        )}
       </TouchableOpacity>
     );
   };
@@ -366,6 +410,19 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#eee',
     },
+    packageCardHighlighted: {
+        backgroundColor: '#FFF9C4',
+        borderColor: '#FFC107',
+        borderWidth: 2,
+        shadowColor: '#FFC107',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
     packageHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -375,9 +432,28 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 16,
     },
+    trackingNumberHighlighted: {
+        color: '#E65100',
+        fontWeight: 'bold',
+    },
     carrier: {
         color: '#666',
         marginBottom: 5,
+    },
+    carrierHighlighted: {
+        color: '#E65100',
+        fontWeight: '600',
+    },
+    notificationBadge: {
+        backgroundColor: '#FFC107',
+        color: '#FFFFFF',
+        fontSize: 12,
+        fontWeight: 'bold',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 12,
+        marginTop: 8,
+        alignSelf: 'flex-start',
     },
     zoneText: {
         color: '#666',

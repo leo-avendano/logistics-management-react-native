@@ -45,17 +45,17 @@ export const Navbar = () => {
   };
 
   const handleNavigation = (screen) => {
-    navigation.reset({
-      index: 0,
-      routes: [{ name: screen }],
-    });
     if (route.name == screen) return;
-    if (screen === 'Logout') {
+    if (screen === 'Login') {
       confirmLogout();
-      return;
-    }
-
-    navigation.replace(screen);
+      return; 
+    } else {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: screen }],
+      });
+      navigation.replace(screen);
+    }      
   };
 
   const buttons = [
@@ -63,7 +63,7 @@ export const Navbar = () => {
     { id: 2, name: 'location-outline', action: () => handleNavigation('Routes') },
     { id: 3, name: 'qr-code-outline', action: () => handleNavigation('QrScanner'), isQr: true },
     { id: 4, name: 'calendar-outline', action: () => handleNavigation('Record') },
-    { id: 5, name: 'exit-outline', action: () => handleNavigation('Logout') },
+    { id: 5, name: 'exit-outline', action: () => handleNavigation('Login') },
   ];
 
   return (
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    height: 62,
+    height: 64,
     backgroundColor: '#FFC107',
     paddingHorizontal: 25,
     zIndex: 120,

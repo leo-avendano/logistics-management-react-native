@@ -59,9 +59,6 @@ const { id } = useLocalSearchParams();
           const rutaData = rutaSnap.data();
           const { lat, lon } = rutaData.destino;
           setCoordenadas({ lat, lon });
-
-          await logisticsService.setRouteInProgress(rutaRef);
-          showToast('🚚 Ruta en progreso!', 'success');
         }
       } else {
         console.log('No se encontró el paquete');

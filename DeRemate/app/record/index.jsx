@@ -17,6 +17,7 @@ import { StatusText } from '../../components/StatusText';
 import { HeaderContainer } from '../../components/HeaderContainer';
 import { openGoogleMaps } from '../../services/openMapsService';
 import { Navbar } from '../../components/Navbar';
+import { Loading } from '../../components/Loading';
 
 const { width, height } = Dimensions.get('window');
 
@@ -102,29 +103,6 @@ export default function RecordScreen() {
     </TouchableOpacity>
   );
 
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#FFC107" />
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.errorContainer}>
-        <Ionicons name="alert-circle" size={50} color="#ff4444" />
-        <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity 
-          style={styles.retryButton}
-          onPress={fetchRutas}
-        >
-          <Text style={styles.retryButtonText}>Reintentar</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -135,68 +113,85 @@ export default function RecordScreen() {
         </View>
       </HeaderContainer>
 
-      {/* Barra de búsqueda y filtros */}
-      <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Buscar por código de ruta o cliente"
-          placeholderTextColor="#999"
-          value={searchText}
-          onChangeText={handleSearch}
-        />
-        <TouchableOpacity 
-          style={styles.filterButton}
-          onPress={() => setShowFilters(true)}
-        >
-          <Ionicons name="filter" size={24} color="#FFC107" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Lista de rutas */}
-      <FlatList
-        data={filteredData}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>No se encontraron rutas</Text>
-        }
-      />
-
-      {/* Modal de filtros */}
-      <Modal
-        visible={showFilters}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setShowFilters(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Filtrar por estado</Text>
-            {filters.map(filter => (
-              <TouchableOpacity
-                key={filter}
-                style={[
-                  styles.filterOption,
-                  selectedFilter === filter && styles.selectedFilter
-                ]}
-                onPress={() => applyFilter(filter)}
-              >
-                <Text style={styles.filterText}>{filter}</Text>
-                {selectedFilter === filter && (
-                  <Ionicons name="checkmark" size={20} color="#FFC107" />
-                )}
-              </TouchableOpacity>
-            ))}
-            <TouchableOpacity 
-              style={styles.closeButton}
-              onPress={() => setShowFilters(false)}
-            >
-              <Text style={styles.closeButtonText}>Cerrar</Text>
-            </TouchableOpacity>
-          </View>
+      {loading ?(
+        <Loading backgroundColor='#F5F5F5'/>
+      ): error ?(
+        <View style={styles.errorContainer}>
+          <Ionicons name="alert-circle" size={50} color="#ff4444" />
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity 
+            style={styles.retryButton}
+            onPress={fetchRutas}
+          >
+            <Text style={styles.retryButtonText}>Reintentar</Text>
+          </TouchableOpacity>
         </View>
-      </Modal>
+      ): (
+        <>
+        {/* Barra de búsqueda y filtros */}
+        <View style={styles.searchContainer}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Buscar por código de ruta o cliente"
+            placeholderTextColor="#999"
+            value={searchText}
+            onChangeText={handleSearch}
+          />
+          <TouchableOpacity 
+            style={styles.filterButton}
+            onPress={() => setShowFilters(true)}
+          >
+            <Ionicons name="filter" size={24} color="#FFC107" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Lista de rutas */}
+        <FlatList
+          data={filteredData}
+          renderItem={renderItem}
+          keyExtractor={item => item.id}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={
+            <Text style={styles.emptyText}>No se encontraron rutas</Text>
+          }
+        />
+
+        {/* Modal de filtros */}
+        <Modal
+          visible={showFilters}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setShowFilters(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Filtrar por estado</Text>
+              {filters.map(filter => (
+                <TouchableOpacity
+                  key={filter}
+                  style={[
+                    styles.filterOption,
+                    selectedFilter === filter && styles.selectedFilter
+                  ]}
+                  onPress={() => applyFilter(filter)}
+                >
+                  <Text style={styles.filterText}>{filter}</Text>
+                  {selectedFilter === filter && (
+                    <Ionicons name="checkmark" size={20} color="#FFC107" />
+                  )}
+                </TouchableOpacity>
+              ))}
+              <TouchableOpacity 
+                style={styles.closeButton}
+                onPress={() => setShowFilters(false)}
+              >
+                <Text style={styles.closeButtonText}>Cerrar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+        </>
+      )}
       <Navbar/>
     </View>
   );

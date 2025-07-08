@@ -12,12 +12,14 @@ import { getRutasPaquetesEnProgreso } from '../../services/firebaseService';
 import { HeaderContainer } from '../../components/HeaderContainer';
 import { useNavigation } from '@react-navigation/native';
 import { Navbar } from '../../components/Navbar';
+import { Loading } from '../../components/Loading';
 
 const { width } = Dimensions.get('window');
 
 export default function MainScreen() {
   const navigation = useNavigation();
   const [hayRutasEnProgreso, setHayRutasEnProgreso] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [rutaUnica, setRutaUnica] = useState(null);
 
   useEffect(() => {
@@ -34,10 +36,12 @@ export default function MainScreen() {
           setHayRutasEnProgreso(false);
           setRutaUnica(null);
         }
+        setLoading(false); // <-- Agrega esto aquí
       })
       .catch((err) => {
         setHayRutasEnProgreso(false);
         setRutaUnica(null);
+        setLoading(false); // <-- Y esto aquí
       });
   }, []);
 
@@ -73,32 +77,37 @@ export default function MainScreen() {
         </Text>
       </View>
 
-      {/* Feature Cards */}
-      <ScrollView style={styles.featuresContainer}>
-        {hayRutasEnProgreso && (
+      {loading ?(
+        <Loading backgroundColor='#F5F5F5'/>
+      ): (
+        <>
+        {/* Feature Cards */}
+        <ScrollView style={styles.featuresContainer}>
+          {hayRutasEnProgreso && (
+            <TouchableOpacity style={styles.featureCard}
+              onPress={handleConfirmarLlegada}
+            >
+              <Ionicons name="checkmark-done-outline" size={40} color="#FFC107" />
+              <Text style={styles.featureTitle}>Confirmar llegada</Text>
+              <Text style={styles.featureDescription}>Confirma la llegada de tus paquetes en progreso</Text>
+            </TouchableOpacity>
+          )}
+
           <TouchableOpacity style={styles.featureCard}
-            onPress={handleConfirmarLlegada}
-          >
-            <Ionicons name="checkmark-done-outline" size={40} color="#FFC107" />
-            <Text style={styles.featureTitle}>Confirmar llegada</Text>
-            <Text style={styles.featureDescription}>Confirma la llegada de tus paquetes en progreso</Text>
+            onPress={() => navigation.replace('Record')}>
+            <Ionicons name="cube-outline" size={40} color="#FFC107" />
+            <Text style={styles.featureTitle}>Gestión de Paquetes</Text>
+            <Text style={styles.featureDescription}>Administra tus envíos y paquetes</Text>
           </TouchableOpacity>
-        )}
 
-        <TouchableOpacity style={styles.featureCard}
-          onPress={() => navigation.replace('Record')}>
-          <Ionicons name="cube-outline" size={40} color="#FFC107" />
-          <Text style={styles.featureTitle}>Gestión de Paquetes</Text>
-          <Text style={styles.featureDescription}>Administra tus envíos y paquetes</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.featureCard}
-          onPress={() => navigation.replace('Routes')}>
-          <Ionicons name="location-outline" size={40} color="#2196F3" />
-          <Text style={styles.featureTitle}>Rutas Disponibles</Text>
-          <Text style={styles.featureDescription}>Encuentra las mejores rutas</Text>
-        </TouchableOpacity>
-      </ScrollView>
+          <TouchableOpacity style={styles.featureCard}
+            onPress={() => navigation.replace('Routes')}>
+            <Ionicons name="location-outline" size={40} color="#2196F3" />
+            <Text style={styles.featureTitle}>Rutas Disponibles</Text>
+            <Text style={styles.featureDescription}>Encuentra las mejores rutas</Text>
+          </TouchableOpacity>
+        </ScrollView>
+        </>)}
       <Navbar/>
     </View>
   );

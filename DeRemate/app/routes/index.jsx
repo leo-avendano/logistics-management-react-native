@@ -184,7 +184,7 @@ export default function AvailableRoutesScreen() {
       {/* Cuerpo principal */}
       <View style={{ flex: 1 }}>
         {loading ? (
-          <Loading />
+          <Loading backgroundColor='#F5F5F5'/>
         ) : error ? (
           <View style={styles.errorContainer}>
             <Ionicons name="alert-circle" size={50} color="#ff4444" />

@@ -27,7 +27,6 @@ export default function DeliveryConfirmationScreen() {
   const navigation = useNavigation();
   const route = useRoute();
   const params = route.params || {};
-  const previousScreen = params.previousScreen ? params.previousScreen : 'Main';
   const routeId = params.uuid ? params.uuid : null;
 
   const handleTimeout = async () => {
@@ -134,24 +133,6 @@ export default function DeliveryConfirmationScreen() {
     );
   };
 
-  if (loading) {
-    return <Loading color={COLORS_.primary} />;
-  }
-
-  if (error || !routeData) {
-    return (
-      <View style={[styles.container, styles.centered]}>
-        <Text>{error || 'No hay datos de ruta disponibles'}</Text>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={styles.backButtonText}>Volver</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -161,8 +142,19 @@ export default function DeliveryConfirmationScreen() {
           <Text style={styles.logoText}>Confirmar Entrega</Text>
         </View>
       </HeaderContainer>
-
-      <View style={styles.content}>
+      {loading ?(
+        <Loading color={COLORS_.primary} />
+      ): error || !routeData ?(
+        <View style={[styles.container, styles.centered]}>
+          <Text>{error || 'No hay datos de ruta disponibles'}</Text>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.backButtonText}>Volver</Text>
+          </TouchableOpacity>
+        </View>
+      ): (<View style={styles.content}>
         {/* Timer */}
         <View style={[styles.timerContainer, isTimeRunningOut && styles.timerWarning]}>
           <Ionicons 
@@ -219,7 +211,7 @@ export default function DeliveryConfirmationScreen() {
             <Text style={styles.buttonText}>Cancelar Entrega</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </View>)}
     </View>
   );
 }

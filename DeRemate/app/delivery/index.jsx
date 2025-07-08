@@ -59,37 +59,33 @@ export default function InProgressOrdersScreen() {
     </TouchableOpacity>
   );
 
-  if (loading) {
-    return <Loading/>;
-  }
-
-  if (error) {
-    return (
-      <View style={[styles.container, styles.centered]}>
-        <Text >{error}</Text>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
-      <HeaderContainer>
+      <HeaderContainer style={{paddingHorizontal: 8, justifyContent: 'start'}}>
         <BackButton/>
         <View style={styles.logoContainer}>
           <Ionicons name="navigate-outline" size={40} color={COLORS_.primary} />
           <Text style={styles.logoText}>Mis Pedidos en Progreso</Text>
         </View>
       </HeaderContainer>
-
-      <FlatList
-        data={orders}
-        keyExtractor={item => item.uuid}
-        renderItem={renderItem}
-        contentContainerStyle={orders.length === 0 ? styles.centered : styles.listContent}
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>No tienes pedidos en progreso.</Text>
-        }
-      />
+      {loading ?(
+        <Loading backgroundColor='#F5F5F5'/>
+      ):error ?(
+        <View style={[styles.container, styles.centered]}>
+          <Text >{error}</Text>
+        </View>
+      ):(
+        <FlatList
+          data={orders}
+          keyExtractor={item => item.uuid}
+          renderItem={renderItem}
+          contentContainerStyle={orders.length === 0 ? styles.centered : styles.listContent}
+          ListEmptyComponent={
+            <Text style={styles.emptyText}>No tienes pedidos en progreso.</Text>
+          }
+        />
+      )}
+      
       <Navbar/>
     </View>
   );

@@ -24,11 +24,10 @@ export default function DeliveryConfirmationScreen() {
   const [routeData, setRouteData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [timeoutHandled, setTimeoutHandled] = useState(false);
   
-  // Estados para el modal de confirmación
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmationNotes, setConfirmationNotes] = useState('');
+  const [timeoutAlertShown, setTimeoutAlertShown] = useState(false);
 
   const navigation = useNavigation();
   const route = useRoute();
@@ -36,23 +35,13 @@ export default function DeliveryConfirmationScreen() {
   const routeId = params.uuid ? params.uuid : null;
 
   const handleTimeout = async () => {
-    if (timeoutHandled) return;
-    setTimeoutHandled(true);
-
-    setLoading(true);
-    try {
-      navigation.goBack();
-      await logisticsService.setRouteCancelled(routeData.uuid);
-      Alert.alert(
-        'Tiempo agotado',
-        'El tiempo para confirmar la entrega ha expirado. La entrega ha sido cancelada automáticamente.',
-        [{ text: 'Entendido' }]
-      );
-    } catch (e) {
-      Alert.alert('Error', 'No se pudo cancelar la entrega automáticamente.');
-    } finally {
-      setLoading(false);
-    }
+  if (timeoutAlertShown) return;
+    setTimeoutAlertShown(true);
+    Alert.alert(
+      'Tiempo agotado',
+      'El tiempo para confirmar la entrega ha expirado. Ahora puede cancelar la entrega si es necesario.',
+      [{ text: 'Entendido' }]
+    );
   };
 
   const { timeLeft, formatTime, isTimeRunningOut } = useDeliveryTimer(handleTimeout);
@@ -212,9 +201,12 @@ export default function DeliveryConfirmationScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.button, styles.cancelButton]}
+              style={[
+                styles.button, 
+                timeLeft === 0 ? styles.cancelButton : styles.cancelButtonDisabled
+              ]}
               onPress={handleCancelDelivery}
-              disabled={timeLeft === 0}
+              disabled={timeLeft > 0}
             >
               <Ionicons name="close" size={24} color="white" />
               <Text style={styles.buttonText}>Cancelar Entrega</Text>
@@ -357,6 +349,9 @@ const styles = StyleSheet.create({
   cancelButton: {
     backgroundColor: COLORS_.danger,
   },
+  cancelButtonDisabled: {
+    backgroundColor: '#cccccc',
+  },
   buttonText: {
     color: 'white',
     fontSize: 16,
@@ -413,8 +408,8 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     borderRadius: 8,
     paddingHorizontal: 12,
-    fontSize: 22, // Más grande
-    height: 48,   // Una sola fila
+    fontSize: 22,
+    height: 48,
     marginBottom: 20,
     backgroundColor: '#f9f9f9',
     color: COLORS_.text,

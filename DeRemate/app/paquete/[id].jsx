@@ -3,14 +3,28 @@ import { useLocalSearchParams } from 'expo-router';
 import { doc, getDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-  Text,
   View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Linking,
+  ScrollView,
+  Dimensions,
+  Animated
 } from 'react-native';
-import { db } from '../../config/firebaseConfig';
+import { logisticsService } from '../../services/logisticsService';
+import { useToast } from '../../components/ToastProvider';
+import { openGoogleMaps } from '../../services/openMapsService';
 
+
+
+
+
+import { db } from '../../config/firebaseConfig';
 
 export const screenOptions = {
   headerShown: false,   
@@ -18,32 +32,49 @@ export const screenOptions = {
 
 export default function PaqueteDetalle() {
 
-  const { id } = useLocalSearchParams();
+const { id } = useLocalSearchParams();
   const [paquete, setPaquete] = useState(null);
+  const [ruta, setRuta] = useState(null);
+  const [coordenadas, setCoordenadas] = useState(null);
   const [loading, setLoading] = useState(true);
 
+
   useEffect(() => {
-    const fetchPaquete = async () => {
-      console.log('Buscando paquete con ID:', id);
-      try {
-        const ref = doc(db, 'Paquete', id); //
-        const snap = await getDoc(ref);
+  const fetchPaquete = async () => {
+    setLoading(true);
+    try {
+      const paqueteRef = doc(db, 'Paquete', id);
+      const paqueteSnap = await getDoc(paqueteRef);
 
-        if (snap.exists()) {
-          const data = snap.data();
-          setPaquete(data);
-        } else {
-          console.warn('Paquete no encontrado en Firestore');
+      if (paqueteSnap.exists()) {
+        const data = paqueteSnap.data();
+        setPaquete(data);
+        const rutaRef = data.rutaRef;
+        setRuta(rutaRef);
+
+        const rutaRefDoc = doc(db, 'Ruta', rutaRef);
+        const rutaSnap = await getDoc(rutaRefDoc);
+
+        if (rutaSnap.exists()) {
+          const rutaData = rutaSnap.data();
+          const { lat, lon } = rutaData.destino;
+          setCoordenadas({ lat, lon });
         }
-      } catch (error) {
-        console.error('Error al buscar el paquete:', error);
-      } finally {
-        setLoading(false);
+      } else {
+        console.log('No se encontró el paquete');
       }
-    };
+    } catch (error) {
+      console.error('Error al buscar el paquete:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  if (id) {
     fetchPaquete();
-  }, [id]);
+  }
+}, [id]);
+
 
   if (loading) {
     return (
@@ -93,6 +124,14 @@ export default function PaqueteDetalle() {
           value={`Depósito ${paquete.ubicacion?.deposito}  ·  Estante ${paquete.ubicacion?.estante}  ·  Sector ${paquete.ubicacion?.sector}`}
         />
       </View>
+
+       <TouchableOpacity 
+                  style={styles.buttonContainer}
+                  onPress={() => openGoogleMaps(coordenadas)}
+                  >
+                    <Text style={styles.linkText}>Ver recorrido en Google Maps</Text>
+        </TouchableOpacity>
+
     </ScrollView>
   );
 }
@@ -175,4 +214,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#D32F2F',
   },
+  buttonContainer: {
+    width: '100%',
+    height: 50,
+    backgroundColor: '#FFC107',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop:40,
+  }
 });

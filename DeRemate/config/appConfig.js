@@ -7,6 +7,9 @@ export const APP_CONFIG = {
     ENDPOINTS: {
       ASSIGN_ROUTE: '/route/assign',
       UNASSIGN_ROUTE: '/route/unassign',
+      SET_ROUTE_IN_PROGRESS: '/startPendingRoute', // si usás baseURL directo
+      SET_ROUTE_DONE: '/route/done',
+      SET_ROUTE_CANCELED: '/route/canceled',
       HELLO: '/hello'
     }
   },

@@ -12,11 +12,13 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { getRutasByStatusAndRepartidor, getPackageInfo } from '../../services/firebaseService';
+import { getRutasByStatusAndRepartidorWithProduct, getPackageInfo } from '../../services/firebaseService';
 import { logisticsService } from '../../services/logisticsService';
 import { StatusText } from '../../components/StatusText';
 import { HeaderContainer } from '../../components/HeaderContainer';
+import { Loading } from '../../components/Loading';
 import { useToast } from '../../components/ToastProvider';
+import { openGoogleMaps } from '../../services/openMapsService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -31,7 +33,7 @@ export default function AvailableRoutesScreen() {
   const [showFilters, setShowFilters] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const router = useRouter();
-  
+
   const { showToast } = useToast();
   const filters = ['Todas', 'Disponible', 'Pendiente', 'En Progreso', 'Completado', 'Fallida'];
 
@@ -42,7 +44,7 @@ export default function AvailableRoutesScreen() {
   const fetchRutas = async () => {
     try {
       setLoading(true);
-      const rutasData = await getRutasByStatusAndRepartidor(currentFilter);
+      const rutasData = await getRutasByStatusAndRepartidorWithProduct(currentFilter);
       setRutas(rutasData);
     } catch (err) {
       console.error('Error al obtener rutas:', err);
@@ -70,7 +72,7 @@ export default function AvailableRoutesScreen() {
     try {
       setActionLoading(true);
       const userId = logisticsService.getCurrentUserId();
-      
+    
       if (!userId) {
         showToast('Usuario no autenticado. Inicia sesión nuevamente.', 'error');
         return;
@@ -107,9 +109,9 @@ export default function AvailableRoutesScreen() {
     if (!route || !route.estado) {
       return null;
     }
-    
+  
     const estado = route.estado.toLowerCase();
-    
+  
     switch (estado) {
       case 'disponible':
         return {
@@ -128,32 +130,42 @@ export default function AvailableRoutesScreen() {
     }
   };
 
+  const mapViewButton = (route) => {
+  if (!route || !route.estado) return null;
+
+  const estado = route.estado.toLowerCase();
+  if (['disponible', 'en progreso', 'pendiente'].includes(estado)) {
+    return (
+      <TouchableOpacity
+        style={[styles.assignButton, { backgroundColor: '#4285F4', marginTop: 10 }]}
+        onPress={() => openGoogleMaps(route.destino)}
+      >
+        <Text style={styles.assignButtonText}>Ver Ruta en Maps</Text>
+      </TouchableOpacity>
+    );
+  }
+  return null;
+};
+
   const renderItem = ({ item }) => {
     if (!item) return null;
-    
     return (
       <TouchableOpacity 
         style={styles.packageCard}
         onPress={() => handleRoutePress(item)}
       >
         <View style={styles.packageHeader}>
-          <Text style={styles.trackingNumber}>ID: {item.uuid || 'N/A'}</Text>
+          <Text style={styles.trackingNumber}>{item.paquete?.nombre || 'No definido'} - {item.uuid || 'N/A'}</Text>
           <StatusText status={item.estado || 'unknown'}/>
         </View>
-        
+      
         <Text style={styles.carrier}>Cliente: {item.cliente || 'N/A'}</Text>
-        <Text style={styles.zoneText}>Destino:</Text>
-        <Text style={styles.zoneText}>  {item.destino?.lat || 'N/A'}  {item.destino?.lon || 'N/A'}</Text>
       </TouchableOpacity>
     );
   };
 
   if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#FFC107" />
-      </View>
-    );
+    return <Loading />;
   }
 
   if (error) {
@@ -209,38 +221,31 @@ export default function AvailableRoutesScreen() {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             {detailsLoading ? (
-              <ActivityIndicator size="large" color="#FFC107" />
+              <Loading size="large" color="#FFC107" backgroundColor="transparent" />
             ) : selectedRoute ? (
               <>
                 <Text style={styles.modalTitle}>Detalles de la Ruta</Text>
-                
+              
                 <View style={styles.detailRow}>
                   <Text style={styles.detailLabel}>ID:</Text>
                   <Text style={styles.detailValue}>{selectedRoute.uuid || 'N/A'}</Text>
                 </View>
-                
+              
                 <View style={styles.detailRow}>
                   <Text style={styles.detailLabel}>Cliente:</Text>
                   <Text style={styles.detailValue}>{selectedRoute.cliente || 'N/A'}</Text>
                 </View>
-                
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Coordenadas:</Text>
-                  <Text style={styles.detailValue}>
-                    {selectedRoute.destino?.lat || 'N/A'}, {selectedRoute.destino?.lon || 'N/A'}
-                  </Text>
-                </View>
-                
+              
                 {routeDetails && (
                   <>
                     <View style={styles.detailRow}>
                       <Text style={styles.detailLabel}>Nombre:</Text>
-                      <Text style={styles.detailValue}>{routeDetails.nombre || "Electrodoméstico"}</Text>
+                      <Text style={styles.detailValue}>{routeDetails.nombre || "No definido"}</Text>
                     </View>
 
                     <View style={styles.detailRow}>
                       <Text style={styles.detailLabel}>Peso:</Text>
-                      <Text style={styles.detailValue}>{routeDetails.peso || "33.49"} kg</Text>
+                      <Text style={styles.detailValue}>{routeDetails.peso || "No definido"} kg</Text>
                     </View>
 
                     <View style={styles.detailRow}>
@@ -249,7 +254,8 @@ export default function AvailableRoutesScreen() {
                     </View>
                   </>
                 )}
-                
+
+                {mapViewButton(selectedRoute)}
                 {(() => {
                   const actionButton = getActionButton(selectedRoute);
                   return actionButton ? (
@@ -266,7 +272,7 @@ export default function AvailableRoutesScreen() {
                     </TouchableOpacity>
                   ) : null;
                 })()}
-                
+              
                 <TouchableOpacity 
                   style={styles.closeButton}
                   onPress={() => setSelectedRoute(null)}
@@ -289,7 +295,7 @@ export default function AvailableRoutesScreen() {
         <View style={styles.modalContainer}>
           <View style={styles.filterModalContent}>
             <Text style={styles.modalTitle}>Filtrar Rutas</Text>
-            
+          
             <ScrollView style={styles.filterScrollView}>
               {filters.map((filter) => (
                 <TouchableOpacity
@@ -317,7 +323,7 @@ export default function AvailableRoutesScreen() {
                 </TouchableOpacity>
               ))}
             </ScrollView>
-            
+          
             <TouchableOpacity 
               style={styles.closeButton}
               onPress={() => setShowFilters(false)}
@@ -494,12 +500,6 @@ const styles = StyleSheet.create({
     filterOptionTextSelected: {
         color: '#FFF',
         fontWeight: 'bold',
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#ffffff'
     },
     errorContainer: {
         flex: 1,

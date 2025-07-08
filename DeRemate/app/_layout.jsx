@@ -9,6 +9,7 @@ import 'react-native-reanimated';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Navbar } from '../components/Navbar';
 import { ToastProvider } from '../components/ToastProvider';
+import { NavbarProvider } from '../hooks/useShowNavbar';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -35,66 +36,74 @@ export default function RootLayout() {
         <SafeAreaProvider>
           <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
             <SafeAreaView style={styles.container}>
-              <Stack screenOptions={screenOptions}>
-                <Stack.Screen
-                  name="index"
-                  options={{
-                    title: 'Inicio',
-                    headerShown: false
-                  }}
-                />
-                <Stack.Screen
-                  name="register/index"
-                  options={{
-                    title: 'Registrarse',
-                    headerShown: false
-                  }}
-                />
-                <Stack.Screen
-                  name="main/index"
-                  options={{
-                    title: 'Home',
-                    headerShown: false
-                  }}
-                />
-                <Stack.Screen
-                  name="record/index"
-                  options={{
-                    title: 'Historial',
-                    headerShown: false
-                  }}
-                />
-                <Stack.Screen
-                  name="record/description"
-                  options={{
-                    title: 'Detalles de la Ruta',
-                    headerShown: false
-                  }}
-                />
-                <Stack.Screen
-                  name="qr-scanner/index"
-                  options={{
-                    title: 'Escáner QR',
-                    headerShown: false
-                  }}
-                />
-                <Stack.Screen
-                  name="routes/index"
-                  options={{
-                    title: 'Rutas Disponibles',
-                    headerShown: false
-                  }}
-                />
-                <Stack.Screen
-                  name="recover/index"
-                  options={{
-                    title: 'Recuperar Contraseña',
-                    headerShown: false
-                  }}
-                />
-                <Stack.Screen name="paquete/[id]" options={{ headerShown: false }} />
-              </Stack>
-              <Navbar/>
+              <NavbarProvider>
+                <Stack screenOptions={screenOptions}>
+                  <Stack.Screen
+                    name="index"
+                    options={{
+                      title: 'Inicio',
+                      headerShown: false
+                    }}
+                  />
+                  <Stack.Screen
+                    name="register/index"
+                    options={{
+                      title: 'Registrarse',
+                      headerShown: false
+                    }}
+                  />
+                  <Stack.Screen
+                    name="main/index"
+                    options={{
+                      title: 'Home',
+                      headerShown: false
+                    }}
+                  />
+                  <Stack.Screen
+                    name="record/index"
+                    options={{
+                      title: 'Historial',
+                      headerShown: false
+                    }}
+                  />
+                  <Stack.Screen
+                    name="record/description"
+                    options={{
+                      title: 'Detalles de la Ruta',
+                      headerShown: false
+                    }}
+                  />
+                  <Stack.Screen
+                    name="qr-scanner/index"
+                    options={{
+                      title: 'Escáner QR',
+                      headerShown: false
+                    }}
+                  />
+                  <Stack.Screen
+                    name="routes/index"
+                    options={{
+                      title: 'Rutas Disponibles',
+                      headerShown: false
+                    }}
+                  />
+                  <Stack.Screen
+                    name="recover/index"
+                    options={{
+                      title: 'Recuperar Contraseña',
+                      headerShown: false
+                    }}
+                  />
+                  <Stack.Screen name="paquete/[id]" options={{ headerShown: false }} />
+                  <Stack.Screen name="confirmation/index" options={{ headerShown: false }} />
+                  <Stack.Screen name="delivery/index" 
+                  options={{ title: 'Delivery',
+                     headerShown: false 
+                    }} 
+                  />
+                  <Stack.Screen name="delivery/confirmation" options={{ headerShown: false }} />
+                </Stack>
+              </NavbarProvider>
               <StatusBar style="dark" />
             </SafeAreaView>
           </ThemeProvider>

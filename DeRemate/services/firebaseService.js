@@ -1,4 +1,4 @@
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, getDoc, doc} from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { db } from '../config/firebaseConfig';
 
@@ -63,7 +63,7 @@ export const getRutasDisponibles = async () => {
   }
 };
 
-export const getRutasByStatusAndRepartidor = async (estado) => {
+export const getRutasByStatusAndRepartidorWithProduct = async (estado) => {
   try {
     const auth = getAuth();
     const user = auth.currentUser;
@@ -73,10 +73,9 @@ export const getRutasByStatusAndRepartidor = async (estado) => {
     }
 
     const repartidorUserID = user.uid;
-    let querySnapshot;
+    let routes = [];
 
     if (estado === 'Todas') {
-      // Get available routes (unassigned) and user's assigned routes
       const disponibleQuery = query(
         collection(db, 'Ruta'),
         where('estado', '==', 'disponible'),
@@ -93,7 +92,7 @@ export const getRutasByStatusAndRepartidor = async (estado) => {
         getDocs(userRoutesQuery)
       ]);
       
-      const routes = [
+      routes = [
         ...disponibleSnapshot.docs.map(doc => ({
           id: doc.id,
           uuid: doc.id,
@@ -105,39 +104,56 @@ export const getRutasByStatusAndRepartidor = async (estado) => {
           ...doc.data()
         }))
       ];
-      
-      return routes;
     } else {
-      // Get routes by specific status
       const estadoFirebase = estado.toLowerCase();
       
       if (estadoFirebase === 'disponible') {
-        // Only show available routes that are unassigned
         const q = query(
           collection(db, 'Ruta'),
           where('estado', '==', estadoFirebase),
           where('repartidorUserID', '==', '')
         );
-        querySnapshot = await getDocs(q);
+        const querySnapshot = await getDocs(q);
+        routes = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          uuid: doc.id,
+          ...doc.data()
+        }));
       } else {
-        // Show user's routes with specific status
         const q = query(
           collection(db, 'Ruta'),
           where('estado', '==', estadoFirebase),
           where('repartidorUserID', '==', repartidorUserID)
         );
-        querySnapshot = await getDocs(q);
+        const querySnapshot = await getDocs(q);
+        routes = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          uuid: doc.id,
+          ...doc.data()
+        }));
       }
-      
-      return querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        uuid: doc.id,
-        ...doc.data()
-      }));
     }
+    const routesWithPackages = await Promise.all(
+      routes.map(async (route) => {
+        try {
+          const packageInfo = await getPackageInfo(route.id);
+          return {
+            ...route,
+            paquete: packageInfo
+          };
+        } catch (error) {
+          console.error(`Error al obtener paquete para ruta ${route.id}:`, error);
+          return {
+            ...route,
+            paquete: null
+          };
+        }
+      })
+    );
+    return routesWithPackages;
     
   } catch (error) {
-    console.error('Error al obtener rutas por estado y repartidor:', error);
+    console.error('Error al obtener rutas con productos por estado y repartidor:', error);
     throw error;
   }
 };
@@ -175,6 +191,102 @@ export const getPackageInfo = async (rutaId) => {
     
   } catch (error) {
     console.error('Error al obtener la ruta:', error);
+    throw error;
+  }
+};
+
+export const getRutasPaquetesEnProgreso = async () => {
+  try {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    
+    if (!user) {
+      throw new Error('Usuario no autenticado');
+    }
+    
+    const rutasQuery = query(
+      collection(db, 'Ruta'),
+      where('estado', '==', 'en progreso'),
+      where('repartidorUserID', '==', user.uid)
+    );
+
+    const rutasSnapshot = await getDocs(rutasQuery);
+    
+    const rutasConPaquetes = await Promise.all(
+      rutasSnapshot.docs.map(async (rutaDoc) => {
+        const rutaData = {
+          id: rutaDoc.id,
+          uuid: rutaDoc.id,
+          ...rutaDoc.data()
+        };
+
+        try {
+          const paqueteQuery = query(
+            collection(db, 'Paquete'),
+            where('rutaRef', '==', rutaDoc.id)
+          );
+          
+          const paqueteSnapshot = await getDocs(paqueteQuery);
+          
+          if (!paqueteSnapshot.empty) {
+            const paqueteDoc = paqueteSnapshot.docs[0];
+            rutaData.paquete = {
+              id: paqueteDoc.id,
+              ...paqueteDoc.data()
+            };
+          } else {
+            rutaData.paquete = null;
+          }
+          
+          return rutaData;
+          
+        } catch (error) {
+          console.error(`Error al obtener paquete para ruta ${rutaDoc.id}:`, error);
+          return {
+            ...rutaData,
+            paquete: null
+          };
+        }
+      })
+    );
+
+    return rutasConPaquetes;
+    
+  } catch (error) {
+    console.error('Error al obtener rutas en proceso con paquetes:', error);
+    throw error;
+  }
+};
+
+export const getByRutaId = async (rutaId) => {
+  try {
+    if (!rutaId) {
+      throw new Error('ID de ruta requerido');
+    }
+
+    const rutaDoc = await getDoc(doc(db, 'Ruta', rutaId));
+    
+    if (!rutaDoc.exists()) {
+      throw new Error('Ruta no encontrada');
+    }
+
+    const rutaData = {
+      id: rutaDoc.id,
+      uuid: rutaDoc.id,
+      ...rutaDoc.data()
+    };
+    try {
+      const paqueteInfo = await getPackageInfo(rutaId);
+      rutaData.paquete = paqueteInfo;
+    } catch (error) {
+      console.error(`Error al obtener paquete para ruta ${rutaId}:`, error);
+      rutaData.paquete = null;
+    }
+
+    return rutaData;
+    
+  } catch (error) {
+    console.error('Error al obtener ruta por ID:', error);
     throw error;
   }
 };

@@ -15,6 +15,7 @@ import { useRouter } from 'expo-router';
 import { getRutasByRepartidor } from '../../services/firebaseService';
 import { StatusText } from '../../components/StatusText';
 import { HeaderContainer } from '../../components/HeaderContainer';
+import { openGoogleMaps } from '../../services/openMapsService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -67,6 +68,12 @@ export default function RecordScreen() {
     setFilteredData(filtered);
   };
 
+  const canShowMapButton = (route) => {
+    if (!route || !route.estado) return false;
+    const estado = route.estado.toLowerCase();
+    return ['en progreso', 'pendiente'].includes(estado);
+  };
+
   const renderItem = ({ item }) => (
     <TouchableOpacity 
       style={styles.packageCard}
@@ -76,11 +83,23 @@ export default function RecordScreen() {
       })}
     >
       <View style={styles.packageHeader}>
-        <Text style={styles.trackingNumber}>ID: {item.uuid}</Text>
-        <StatusText status={item.estado}/>
+        <View style={styles.packageHeaderLeft}>
+          <Text style={styles.trackingNumber}>{item.uuid}</Text>
+        </View>
+        <View style={styles.packageHeaderRight}>
+          <StatusText status={item.estado}/>
+        </View>
       </View>
-      
-      <Text style={styles.carrier}>Cliente: {item.cliente}</Text>
+      <Text style={styles.carrier}>{item.cliente}</Text>
+      {canShowMapButton(item) && (
+            <TouchableOpacity
+              style={styles.mapIconButtonDiv}
+              onPress={() => openGoogleMaps(item.destino)}
+              activeOpacity={0.7}
+            >
+              <Ionicons style={styles.mapIconButton} name="map-outline" size={22} color="#FFC107" />
+            </TouchableOpacity>
+          )}
     </TouchableOpacity>
   );
 
@@ -184,6 +203,23 @@ export default function RecordScreen() {
 }
 
 const styles = StyleSheet.create({
+  mapIconButtonDiv: {
+    position: 'absolute',
+    top: 0,
+    left: 180,
+    right: 0,
+    bottom: 0,
+    width: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+    transform: [{ scale: 1.8 }]
+  },
+  mapIconButton:{
+    borderWidth: 1,
+    borderColor: '#FFC107',
+    borderRadius: 2,
+  },
   container: {
     flex: 1,
     backgroundColor: '#F5F5F5',

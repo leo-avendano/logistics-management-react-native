@@ -21,6 +21,16 @@ import { ValidationUtils } from '../utils/ValidationUtils';
 import { ToastMessages, getErrorMessage } from '../utils/ToastMessages';
 import { NetworkUtils } from '../utils/NetworkUtils';
 import { useToast } from '../components/ToastProvider';
+import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 const { width } = Dimensions.get('window');
 
@@ -35,8 +45,34 @@ export default function LoginScreen() {
   
   const { showToast } = useToast();
 
+  useEffect(() => {  // para tener el token
+  async function registerForPushNotificationsAsync() {
+    if (Device.isDevice) {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+
+      if (finalStatus !== 'granted') {
+        console.log('❌ Permiso para notificaciones denegado');
+        return;
+      }
+
+      const token = (await Notifications.getExpoPushTokenAsync()).data;
+      console.log('✅ Expo Push Token:', token);
+    } else {
+      console.log('❌ Las notificaciones push requieren un dispositivo físico');
+    }
+  }
+
+  registerForPushNotificationsAsync();
+}, []);
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => { // verifica antes si el user esta logueado y verificado
       if (user && user.emailVerified) {
         router.replace('/main');
       }

@@ -88,34 +88,6 @@ class LogisticsService {
     }
   }
 
-  async setRouteInProgress(routeUUID) {
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
-    const headers = await this.getAuthHeaders();
-
-    const response = await fetch(`${this.baseURL}${this.endpoints.SET_ROUTE_IN_PROGRESS}`, {
-      method: 'POST',
-      headers: headers,
-      body: JSON.stringify({ routeUUID }),
-      signal: controller.signal
-    });
-      console.log('🌐 POST', url);   // 👀
-
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      throw new Error(`Error al poner la ruta en progreso: ${response.status}`);
-    }
-
-    return { success: true, message: 'Ruta en progreso' };
-  } catch (error) {
-    console.error('Error al poner la ruta en progreso:', error);
-    throw error;
-  }
-}
-
   // Get current authenticated user ID
   getCurrentUserId() {
     const auth = getAuth();

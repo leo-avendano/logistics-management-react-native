@@ -8,13 +8,12 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect, useRouter, useLocalSearchParams } from 'expo-router';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { HeaderContainer } from '../../components/HeaderContainer';
 import { Loading } from '../../components/Loading';
-import { useShowNavbar } from '../../hooks/useShowNavbar';
 import { useDeliveryTimer } from '../../hooks/useDeliveryTimer';
 import { getByRutaId } from '../../services/firebaseService';
-import { logisticsService } from '../../services/logisticsService'; // 👈 Importa el servicio
+import { logisticsService } from '../../services/logisticsService';
 import { COLORS_ } from '../../constants/Colors';
 
 const { width, height } = Dimensions.get('window');
@@ -25,11 +24,11 @@ export default function DeliveryConfirmationScreen() {
   const [error, setError] = useState(null);
   const [timeoutHandled, setTimeoutHandled] = useState(false);
 
-  const router = useRouter();
-  const params = useLocalSearchParams();
-  const previousScreen = params.previousScreen ? params.previousScreen : '/main';
+  const navigation = useNavigation();
+  const route = useRoute();
+  const params = route.params || {};
+  const previousScreen = params.previousScreen ? params.previousScreen : 'Main';
   const routeId = params.uuid ? params.uuid : null;
-  const [showNavbar, setShowNavbar] = useShowNavbar();
 
   const handleTimeout = async () => {
     if (timeoutHandled) return;
@@ -37,7 +36,7 @@ export default function DeliveryConfirmationScreen() {
 
     setLoading(true);
     try {
-      router.replace(previousScreen);
+      navigation.goBack();
       await logisticsService.setRouteCancelled(routeData.uuid);
       Alert.alert(
         'Tiempo agotado',
@@ -52,13 +51,6 @@ export default function DeliveryConfirmationScreen() {
   };
 
   const { timeLeft, formatTime, isTimeRunningOut } = useDeliveryTimer(handleTimeout);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      setShowNavbar(false);
-      return () => setShowNavbar(true);
-    }, [setShowNavbar])
-  );
 
   useEffect(() => {
     const loadRouteData = async () => {
@@ -95,8 +87,8 @@ export default function DeliveryConfirmationScreen() {
           onPress: async () => {
             setLoading(true);
             try {
+              navigation.goBack()
               await logisticsService.setRouteCompleted(routeData.uuid);
-              router.replace(previousScreen);
               Alert.alert(
                 'Entrega confirmada',
                 'El paquete ha sido entregado exitosamente',
@@ -123,9 +115,9 @@ export default function DeliveryConfirmationScreen() {
           text: 'Si',
           onPress: async () => {
             setLoading(true);
+            navigation.goBack()
             try {
               await logisticsService.setRouteCancelled(routeData.uuid);
-              router.replace(previousScreen);
               Alert.alert(
                 'Entrega cancelada',
                 'La entrega del paquete ha sido cancelada',
@@ -152,7 +144,7 @@ export default function DeliveryConfirmationScreen() {
         <Text>{error || 'No hay datos de ruta disponibles'}</Text>
         <TouchableOpacity 
           style={styles.backButton}
-          onPress={() => router.replace(previousScreen)}
+          onPress={() => navigation.goBack()}
         >
           <Text style={styles.backButtonText}>Volver</Text>
         </TouchableOpacity>

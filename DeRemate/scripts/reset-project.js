@@ -33,10 +33,9 @@ export default function Index() {
 }
 `;
 
-const layoutContent = `import { Stack } from "expo-router";
+const layoutContent = `
 
 export default function RootLayout() {
-  return <Stack />;
 }
 `;
 

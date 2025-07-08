@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -12,10 +12,9 @@ import {
   Dimensions,
   Animated
 } from 'react-native';
-import { router } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../../config/firebaseConfig';
-import { Ionicons } from '@expo/vector-icons';
 import LogoComponent from '../../components/LogoComponent';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useToast } from '../../components/ToastProvider';
@@ -27,9 +26,10 @@ export default function RecoverScreen() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [inputErrors, setInputErrors] = useState({});
-  const shakeAnimation = new Animated.Value(0);
-  
+  const shakeAnimation = useRef(new Animated.Value(0)).current;
+
   const { showToast } = useToast();
+  const navigation = useNavigation();
 
   const isValidEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -93,29 +93,29 @@ export default function RecoverScreen() {
     const isInCooldown = await checkCooldown();
     if (isInCooldown) {
       showToast('Debes esperar antes de solicitar otro correo.', 'warning');
-      router.push('/mail-cooldown');
+      navigation.navigate('MailCooldown'); // Cambia el nombre según tu stack
       return;
     }
 
     try {
       setLoading(true);
       await sendPasswordResetEmail(auth, email);
-      
+
       // Set cooldown
       await setCooldown();
-      
+
       showToast('Se ha enviado un correo de recuperación a tu email.', 'success', 4000);
-      
+
       // Navigate after a short delay to let user read the message
       setTimeout(() => {
-        router.push('/confirmation');
+        navigation.navigate('Confirmation'); // Cambia el nombre según tu stack
       }, 1000);
-      
+
     } catch (error) {
       console.error('Recovery error:', error);
-      
+
       let errorMessage = 'Error al enviar el correo de recuperación';
-      
+
       if (error.code === 'auth/user-not-found') {
         errorMessage = 'No existe una cuenta con este correo electrónico';
         setInputErrors({ email: true });
@@ -125,7 +125,7 @@ export default function RecoverScreen() {
       } else if (error.code === 'auth/network-request-failed') {
         errorMessage = 'Error de conexión. Verifica tu internet e intenta nuevamente';
       }
-      
+
       showToast(errorMessage, 'error');
       shakeInputs();
     } finally {
@@ -189,7 +189,7 @@ export default function RecoverScreen() {
           {/* Login Link */}
           <TouchableOpacity 
             style={styles.linkButton}
-            onPress={() => router.back()}
+            onPress={() => navigation.goBack()}
           >
             <Text style={styles.linkText}>Volver al inicio de sesión</Text>
           </TouchableOpacity>
@@ -303,4 +303,4 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 4,
   },
-}); 
+});

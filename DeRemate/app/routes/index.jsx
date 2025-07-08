@@ -8,10 +8,10 @@ import {
   FlatList,
   Modal,
   ActivityIndicator,
+  KeyboardAvoidingView,
   ScrollView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import { getRutasByStatusAndRepartidorWithProduct, getPackageInfo } from '../../services/firebaseService';
 import { logisticsService } from '../../services/logisticsService';
 import { StatusText } from '../../components/StatusText';
@@ -19,6 +19,7 @@ import { HeaderContainer } from '../../components/HeaderContainer';
 import { Loading } from '../../components/Loading';
 import { useToast } from '../../components/ToastProvider';
 import { openGoogleMaps } from '../../services/openMapsService';
+import { Navbar } from '../../components/Navbar';
 
 const { width, height } = Dimensions.get('window');
 
@@ -32,7 +33,6 @@ export default function AvailableRoutesScreen() {
   const [currentFilter, setCurrentFilter] = useState('Todas');
   const [showFilters, setShowFilters] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
-  const router = useRouter();
 
   const { showToast } = useToast();
   const filters = ['Todas', 'Disponible', 'Pendiente', 'En Progreso', 'Completado', 'Fallida'];
@@ -46,6 +46,7 @@ export default function AvailableRoutesScreen() {
       setLoading(true);
       const rutasData = await getRutasByStatusAndRepartidorWithProduct(currentFilter);
       setRutas(rutasData);
+      setError(null);
     } catch (err) {
       console.error('Error al obtener rutas:', err);
       setError('Error al cargar las rutas');
@@ -81,7 +82,7 @@ export default function AvailableRoutesScreen() {
       await logisticsService.assignRouteToRepartidor(route.uuid, userId);
       showToast('🚚 Ruta asignada correctamente', 'success');
       setSelectedRoute(null);
-      fetchRutas(); // Refresh the list
+      fetchRutas();
     } catch (error) {
       console.error('Error assigning route:', error);
       showToast(`Error al asignar la ruta: ${error.message}`, 'error');
@@ -96,7 +97,7 @@ export default function AvailableRoutesScreen() {
       await logisticsService.unassignRouteFromRepartidor(route.uuid);
       showToast('✅ Ruta liberada correctamente', 'success');
       setSelectedRoute(null);
-      fetchRutas(); // Refresh the list
+      fetchRutas();
     } catch (error) {
       console.error('Error unassigning route:', error);
       showToast(`Error al liberar la ruta: ${error.message}`, 'error');
@@ -131,21 +132,21 @@ export default function AvailableRoutesScreen() {
   };
 
   const mapViewButton = (route) => {
-  if (!route || !route.estado) return null;
+    if (!route || !route.estado) return null;
 
-  const estado = route.estado.toLowerCase();
-  if (['disponible', 'en progreso', 'pendiente'].includes(estado)) {
-    return (
-      <TouchableOpacity
-        style={[styles.assignButton, { backgroundColor: '#4285F4', marginTop: 10 }]}
-        onPress={() => openGoogleMaps(route.destino)}
-      >
-        <Text style={styles.assignButtonText}>Ver Ruta en Maps</Text>
-      </TouchableOpacity>
-    );
-  }
-  return null;
-};
+    const estado = route.estado.toLowerCase();
+    if (['disponible', 'en progreso', 'pendiente'].includes(estado)) {
+      return (
+        <TouchableOpacity
+          style={[styles.assignButton, { backgroundColor: '#4285F4', marginTop: 10 }]}
+          onPress={() => openGoogleMaps(route.destino)}
+        >
+          <Text style={styles.assignButtonText}>Ver Ruta en Maps</Text>
+        </TouchableOpacity>
+      );
+    }
+    return null;
+  };
 
   const renderItem = ({ item }) => {
     if (!item) return null;
@@ -158,30 +159,10 @@ export default function AvailableRoutesScreen() {
           <Text style={styles.trackingNumber}>{item.paquete?.nombre || 'No definido'} - {item.uuid || 'N/A'}</Text>
           <StatusText status={item.estado || 'unknown'}/>
         </View>
-      
         <Text style={styles.carrier}>Cliente: {item.cliente || 'N/A'}</Text>
       </TouchableOpacity>
     );
   };
-
-  if (loading) {
-    return <Loading />;
-  }
-
-  if (error) {
-    return (
-      <View style={styles.errorContainer}>
-        <Ionicons name="alert-circle" size={50} color="#ff4444" />
-        <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity 
-          style={styles.retryButton}
-          onPress={() => window.location.reload()}
-        >
-          <Text style={styles.retryButtonText}>Reintentar</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>
@@ -200,16 +181,33 @@ export default function AvailableRoutesScreen() {
         </TouchableOpacity>
       </HeaderContainer>
 
-      {/* Lista de rutas */}
-      <FlatList
-        data={rutas}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>No hay rutas disponibles</Text>
-        }
-      />
+      {/* Cuerpo principal */}
+      <View style={{ flex: 1 }}>
+        {loading ? (
+          <Loading />
+        ) : error ? (
+          <View style={styles.errorContainer}>
+            <Ionicons name="alert-circle" size={50} color="#ff4444" />
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity 
+              style={styles.retryButton}
+              onPress={fetchRutas}
+            >
+              <Text style={styles.retryButtonText}>Reintentar</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <FlatList
+            data={rutas}
+            renderItem={renderItem}
+            keyExtractor={item => item.id}
+            contentContainerStyle={styles.listContent}
+            ListEmptyComponent={
+              <Text style={styles.emptyText}>No hay rutas disponibles</Text>
+            }
+          />
+        )}
+      </View>
 
       {/* Modal de detalles de ruta */}
       <Modal
@@ -333,6 +331,8 @@ export default function AvailableRoutesScreen() {
           </View>
         </View>
       </Modal>
+
+      <Navbar/>
     </View>
   );
 }

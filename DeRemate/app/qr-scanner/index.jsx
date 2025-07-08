@@ -1,5 +1,5 @@
 import { Camera, CameraView, useCameraPermissions } from 'expo-camera';
-import { useRouter } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 import { doc, getDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -8,7 +8,7 @@ import { useToast } from '../../components/ToastProvider';
 import { db } from '../../config/firebaseConfig';
 
 export default function QRScanner() {
-  const router = useRouter();
+  const navigation = useNavigation();
   const [scanned, setScanned] = useState(false);
   const [torch, setTorch] = useState(false);                         
   const [permission, requestPermission] = useCameraPermissions();
@@ -27,7 +27,6 @@ export default function QRScanner() {
     if (scanned) return;
     setScanned(true);
 
-
     try {
       const sanitized = data.replace(/\u00A0/g, ' ').trim();
       const { paqueteId } = JSON.parse(sanitized);
@@ -38,7 +37,7 @@ export default function QRScanner() {
         showToast('📦 El paquete no existe en el sistema', 'warning');
       } else {
         showToast('✅ Paquete encontrado', 'success', 1500);
-        router.push(`/paquete/${paqueteId}`); // paso como parametro el id del paquete
+        navigation.navigate('Paquete', { id: paqueteId }); // paso como parámetro el id del paquete
       }
     } catch (err) {
       console.log('Error escaneo:', err);

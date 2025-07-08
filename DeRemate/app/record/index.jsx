@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -11,11 +11,12 @@ import {
   ActivityIndicator
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 import { getRutasByRepartidor } from '../../services/firebaseService';
 import { StatusText } from '../../components/StatusText';
 import { HeaderContainer } from '../../components/HeaderContainer';
 import { openGoogleMaps } from '../../services/openMapsService';
+import { Navbar } from '../../components/Navbar';
 
 const { width, height } = Dimensions.get('window');
 
@@ -27,27 +28,28 @@ export default function RecordScreen() {
   const [selectedFilter, setSelectedFilter] = useState('Todos');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const router = useRouter();
+  const navigation = useNavigation();
   
   const filters = ['Todos', 'Pendiente', 'En Progreso', 'Completado', 'Cancelado'];
 
-  useEffect(() => {
-    const fetchRutas = async () => {
-      try {
-        setLoading(true);
-        const rutasData = await getRutasByRepartidor();
-        setRutas(rutasData);
-        setFilteredData(rutasData);
-      } catch (err) {
-        console.error('Error al obtener rutas:', err);
-        setError('Error al cargar el historial');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchRutas();
+  const fetchRutas = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const rutasData = await getRutasByRepartidor();
+      setRutas(rutasData);
+      setFilteredData(rutasData);
+    } catch (err) {
+      console.error('Error al obtener rutas:', err);
+      setError('Error al cargar el historial');
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchRutas();
+  }, [fetchRutas]);
 
   const applyFilter = (filter) => {
     setSelectedFilter(filter);
@@ -77,10 +79,7 @@ export default function RecordScreen() {
   const renderItem = ({ item }) => (
     <TouchableOpacity 
       style={styles.packageCard}
-      onPress={() => router.replace({
-        pathname: "/record/description",
-        params: { route: JSON.stringify(item) }
-      })}
+      onPress={() => navigation.push('RecordDescription', { route: JSON.stringify(item) })}
     >
       <View style={styles.packageHeader}>
         <View style={styles.packageHeaderLeft}>
@@ -92,14 +91,14 @@ export default function RecordScreen() {
       </View>
       <Text style={styles.carrier}>{item.cliente}</Text>
       {canShowMapButton(item) && (
-            <TouchableOpacity
-              style={styles.mapIconButtonDiv}
-              onPress={() => openGoogleMaps(item.destino)}
-              activeOpacity={0.7}
-            >
-              <Ionicons style={styles.mapIconButton} name="map-outline" size={22} color="#FFC107" />
-            </TouchableOpacity>
-          )}
+        <TouchableOpacity
+          style={styles.mapIconButtonDiv}
+          onPress={() => openGoogleMaps(item.destino)}
+          activeOpacity={0.7}
+        >
+          <Ionicons style={styles.mapIconButton} name="map-outline" size={22} color="#FFC107" />
+        </TouchableOpacity>
+      )}
     </TouchableOpacity>
   );
 
@@ -118,7 +117,7 @@ export default function RecordScreen() {
         <Text style={styles.errorText}>{error}</Text>
         <TouchableOpacity 
           style={styles.retryButton}
-          onPress={() => window.location.reload()}
+          onPress={fetchRutas}
         >
           <Text style={styles.retryButtonText}>Reintentar</Text>
         </TouchableOpacity>
@@ -198,6 +197,7 @@ export default function RecordScreen() {
           </View>
         </View>
       </Modal>
+      <Navbar/>
     </View>
   );
 }

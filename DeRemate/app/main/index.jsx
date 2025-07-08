@@ -9,16 +9,18 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getRutasPaquetesEnProgreso } from '../../services/firebaseService';
-import { useRouter } from 'expo-router';
+import { HeaderContainer } from '../../components/HeaderContainer';
+import { useNavigation } from '@react-navigation/native';
+import { Navbar } from '../../components/Navbar';
 
 const { width } = Dimensions.get('window');
 
 export default function MainScreen() {
-  const router = useRouter();
+  const navigation = useNavigation();
   const [hayRutasEnProgreso, setHayRutasEnProgreso] = useState(false);
   const [rutaUnica, setRutaUnica] = useState(null);
 
-useEffect(() => {
+  useEffect(() => {
     getRutasPaquetesEnProgreso()
       .then((rutas) => {
         if (Array.isArray(rutas) && rutas.length > 0) {
@@ -41,14 +43,13 @@ useEffect(() => {
 
   const handleConfirmarLlegada = () => {
     if (rutaUnica) {
-      router.replace({
-        pathname: '/delivery/confirmation',
-        params: { previousScreen: '/main', uuid: rutaUnica.uuid }
+      navigation.push('DeliveryConfirmation', {
+        previousScreen: 'Main',
+        uuid: rutaUnica.uuid
       });
     } else {
-      router.replace({
-        pathname: '/delivery',
-        params: { previousScreen: '/main' }
+      navigation.push('Delivery', {
+        previousScreen: 'Main'
       });
     }
   };
@@ -56,12 +57,12 @@ useEffect(() => {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
+      <HeaderContainer>
         <View style={styles.logoContainer}>
           <Ionicons name="home-outline" size={40} color="#FFC107" />
           <Text style={styles.logoText}>DeRemate</Text>
         </View>
-      </View>
+      </HeaderContainer>
 
       {/* Welcome Section */}
       <View style={styles.welcomeContainer}>
@@ -85,19 +86,20 @@ useEffect(() => {
         )}
 
         <TouchableOpacity style={styles.featureCard}
-        onPress={() => router.replace('/record')}>
+          onPress={() => navigation.replace('Record')}>
           <Ionicons name="cube-outline" size={40} color="#FFC107" />
           <Text style={styles.featureTitle}>Gestión de Paquetes</Text>
           <Text style={styles.featureDescription}>Administra tus envíos y paquetes</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.featureCard}
-        onPress={() => router.replace('/routes')}>
+          onPress={() => navigation.replace('Routes')}>
           <Ionicons name="location-outline" size={40} color="#2196F3" />
           <Text style={styles.featureTitle}>Rutas Disponibles</Text>
           <Text style={styles.featureDescription}>Encuentra las mejores rutas</Text>
         </TouchableOpacity>
       </ScrollView>
+      <Navbar/>
     </View>
   );
 }
@@ -200,4 +202,4 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
   },
-}); 
+});

@@ -1,13 +1,12 @@
 import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 
-export const BackButton = ({ routeBack , tintColor = '#FFC107', size = 28 }) => {
-  const router = useRouter();
+export const BackButton = ({ tintColor = '#FFC107', size = 28 }) => {
+  const navigation = useNavigation();
 
   const handlePress = () => {
-    const targetRoute = `/${routeBack}`;
-    router.replace(targetRoute);
+    navigation.goBack()
   };
 
   return (

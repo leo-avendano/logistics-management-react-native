@@ -6,12 +6,14 @@ import {
   StyleSheet,
   Dimensions
 } from 'react-native';
-import { router } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
 export default function ConfirmationScreen() {
+  const navigation = useNavigation();
+
   return (
     <View style={styles.container}>
       {/* Logo Section */}
@@ -36,7 +38,7 @@ export default function ConfirmationScreen() {
       {/* Continue Button */}
       <TouchableOpacity 
         style={styles.continueButton}
-        onPress={() => router.replace('/')}
+        onPress={() => navigation.replace('Login')}
       >
         <Text style={styles.continueButtonText}>CONTINUAR</Text>
       </TouchableOpacity>
@@ -102,4 +104,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#000',
   },
-}); 
+});

@@ -3,14 +3,14 @@ export const APP_CONFIG = {
   // API Configuration
   API: {
     // Base URL from Android project
-    BASE_URL: 'https://logistics-management-26709.web.app/api',
+    BASE_URL: 'https://logistics-management-26709.web.app',
     ENDPOINTS: {
-      ASSIGN_ROUTE: '/route/assign',
-      UNASSIGN_ROUTE: '/route/unassign',
-      SET_ROUTE_IN_PROGRESS: '/startPendingRoute', // si usás baseURL directo
-      SET_ROUTE_DONE: '/route/done',
-      SET_ROUTE_CANCELED: '/route/canceled',
-      HELLO: '/hello'
+      ASSIGN_ROUTE: '/api/route/assign',
+      UNASSIGN_ROUTE: '/api/route/unassign',
+      SET_ROUTE_IN_PROGRESS: '/api/route/start',
+      SET_ROUTE_DONE: '/api/route/done',
+      SET_ROUTE_CANCELED: '/api/route/canceled',
+      HELLO: '/api/hello'
     }
   },
   

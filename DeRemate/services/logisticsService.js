@@ -93,21 +93,33 @@ class LogisticsService {
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
     const headers = await this.getAuthHeaders();
 
-    const response = await fetch(`${this.baseURL}${this.endpoints.SET_ROUTE_IN_PROGRESS}`, {
+    const url = `${this.baseURL}${this.endpoints.SET_ROUTE_IN_PROGRESS}`;
+    const requestBody = { routeUUID };
+    
+    console.log('🌐 POST URL:', url);
+    console.log('📋 Request Body:', JSON.stringify(requestBody));
+    console.log('🔐 Headers:', JSON.stringify(headers, null, 2));
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: headers,
-      body: JSON.stringify({ routeUUID }),
+      body: JSON.stringify(requestBody),
       signal: controller.signal
     });
-      console.log('🌐 POST', url);   // 👀
-
 
     clearTimeout(timeoutId);
 
+    console.log('📡 Response Status:', response.status);
+    console.log('📡 Response StatusText:', response.statusText);
+
     if (!response.ok) {
-      throw new Error(`Error al poner la ruta en progreso: ${response.status}`);
+      const responseText = await response.text();
+      console.log('❌ Response Error Body:', responseText);
+      throw new Error(`Error al poner la ruta en progreso: ${response.status} - ${responseText}`);
     }
 
+    const responseData = await response.text();
+    console.log('✅ Response Success:', responseData);
     return { success: true, message: 'Ruta en progreso' };
   } catch (error) {
     console.error('Error al poner la ruta en progreso:', error);

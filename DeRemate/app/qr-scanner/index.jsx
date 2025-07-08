@@ -7,6 +7,7 @@ import { Button, IconButton, Surface } from 'react-native-paper';
 import { useToast } from '../../components/ToastProvider';
 import { db } from '../../config/firebaseConfig';
 import { Navbar } from '../../components/Navbar';
+import { logisticsService } from '../../services/logisticsService';
 
 
 export default function QRScanner() {
@@ -38,7 +39,18 @@ export default function QRScanner() {
       if (!snap.exists()) {
         showToast('📦 El paquete no existe en el sistema', 'warning');
       } else {
-        showToast('✅ Paquete encontrado', 'success', 1500);
+        const paqueteData = snap.data();
+        const routeUUID = paqueteData.rutaRef;
+        
+        // Hacer el request POST para iniciar la ruta pendiente
+        try {
+          await logisticsService.setRouteInProgress(routeUUID);
+          showToast('✅ Paquete encontrado y ruta iniciada', 'success', 1500);
+        } catch (requestError) {
+          console.log('Error al iniciar ruta:', requestError);
+          showToast('⚠️ Paquete encontrado pero no se pudo iniciar la ruta', 'warning');
+        }
+        
         navigation.navigate('Paquete', { id: paqueteId }); // paso como parámetro el id del paquete
       }
     } catch (err) {

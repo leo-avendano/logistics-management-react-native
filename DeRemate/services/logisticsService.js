@@ -95,10 +95,6 @@ class LogisticsService {
 
     const url = `${this.baseURL}${this.endpoints.SET_ROUTE_IN_PROGRESS}`;
     const requestBody = { routeUUID };
-    
-    console.log('🌐 POST URL:', url);
-    console.log('📋 Request Body:', JSON.stringify(requestBody));
-    console.log('🔐 Headers:', JSON.stringify(headers, null, 2));
 
     const response = await fetch(url, {
       method: 'POST',
@@ -109,17 +105,12 @@ class LogisticsService {
 
     clearTimeout(timeoutId);
 
-    console.log('📡 Response Status:', response.status);
-    console.log('📡 Response StatusText:', response.statusText);
-
     if (!response.ok) {
       const responseText = await response.text();
-      console.log('❌ Response Error Body:', responseText);
       throw new Error(`Error al poner la ruta en progreso: ${response.status} - ${responseText}`);
     }
 
     const responseData = await response.text();
-    console.log('✅ Response Success:', responseData);
     return { success: true, message: 'Ruta en progreso' };
   } catch (error) {
     console.error('Error al poner la ruta en progreso:', error);
@@ -128,27 +119,15 @@ class LogisticsService {
 }
   async setRouteCompleted(routeUUID, inputUser) {
     try {
-      console.log('🚀 Starting setRouteCompleted...');
-      console.log('📥 Input params:', { routeUUID, inputUser });
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), this.timeout);
       
-      console.log('⏱️ Timeout set to:', this.timeout, 'ms');
-
-      console.log('🔑 Getting auth headers...');
       const headers = await this.getAuthHeaders();
-      console.log('🔐 Headers obtained:', JSON.stringify(headers, null, 2));
 
       const url = `${this.baseURL}${this.endpoints.SET_ROUTE_DONE}`;
       const requestBody = { routeUUID, codigo: inputUser };
-      
-      console.log('🌐 POST URL:', url);
-      console.log('📋 Request Body:', JSON.stringify(requestBody));
-      console.log('🔧 BaseURL:', this.baseURL);
-      console.log('🔧 Endpoint:', this.endpoints.SET_ROUTE_DONE);
 
-      console.log('📡 Making fetch request...');
       const response = await fetch(url, {
         method: 'POST',
         headers: headers,
@@ -156,32 +135,17 @@ class LogisticsService {
         signal: controller.signal
       });
 
-      console.log('📡 Response received!');
-      console.log('📡 Response Status:', response.status);
-      console.log('📡 Response StatusText:', response.statusText);
-      console.log('📡 Response Headers:', JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2));
-
       clearTimeout(timeoutId);
-      console.log('⏱️ Timeout cleared');
 
       if (!response.ok) {
-        console.log('❌ Response not OK, reading error body...');
         const responseText = await response.text();
-        console.log('❌ Error Response Body:', responseText);
+        if (response.status == "400" && JSON.parse(responseText).error == "Invalid confirmation code")
+          throw new Error(`Codigo de Confirmacion Invalido`)
         throw new Error(`Error al completar la ruta: ${response.status} - ${responseText}`);
       }
-
-      console.log('✅ Response OK, reading success body...');
       const responseData = await response.text();
-      console.log('✅ Success Response Body:', responseData);
-      
-      console.log('🎉 setRouteCompleted completed successfully!');
       return { success: true, message: 'Ruta completada' };
     } catch (error) {
-      console.error('💥 Error in setRouteCompleted:', error);
-      console.error('💥 Error name:', error.name);
-      console.error('💥 Error message:', error.message);
-      console.error('💥 Error stack:', error.stack);
       throw error;
     }
   }

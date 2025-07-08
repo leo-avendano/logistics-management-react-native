@@ -101,8 +101,10 @@ export default function DeliveryConfirmationScreen() {
         'El paquete ha sido entregado exitosamente',
         [{ text: 'OK' }]
       );
-    } catch (e) {
-      Alert.alert('Error', 'No se pudo confirmar la entrega.');
+    } catch (error) {
+      const errorString = error.toString();
+      const message = errorString.substring(errorString.indexOf("Error: ") + 7, errorString.length);
+      Alert.alert(message);
     } finally {
       setLoading(false);
       setConfirmationNotes('');

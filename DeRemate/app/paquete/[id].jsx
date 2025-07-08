@@ -144,18 +144,20 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: '#FFF',
     borderRadius: 16,
-    padding: 20,
+    padding: 24,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 6,
-    shadowOffset: { height: 2, width: 0 },
+    shadowOffset: { height: 4, width: 0 },
     elevation: 4,
-    marginTop:50
+    marginTop: 50, // Espacio superior de la card
+    marginBottom: 30,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 12,  // Este margen es el que se ajusta
+    marginTop: 0,  // Eliminar espacio arriba del título
   },
   headerIcon: {
     marginRight: 12,
@@ -180,7 +182,7 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    marginBottom: 10,
+    marginBottom: 15, 
   },
   rowLabel: {
     width: 90,
@@ -211,6 +213,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop:40,
+    marginTop: 40,
+  },
+  linkText: {
+    fontSize: 16,
+    color: '#FFFFFF',
   }
 });

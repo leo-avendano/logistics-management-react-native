@@ -88,7 +88,6 @@ class LogisticsService {
     }
   }
 
-<<<<<<< HEAD
   async setRouteInProgress(routeUUID) {
   try {
     const controller = new AbortController();
@@ -167,8 +166,6 @@ class LogisticsService {
       throw error;
     }
   }
-=======
->>>>>>> d4606cd48d66782554476f79e48b0bb933f01985
 
   // Get current authenticated user ID
   getCurrentUserId() {

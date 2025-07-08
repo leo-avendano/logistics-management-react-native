@@ -15,6 +15,8 @@ import { openGoogleMaps } from '../../services/openMapsService';
 import { db } from '../../config/firebaseConfig';
 import { useRoute } from '@react-navigation/native';
 import { HeaderContainer } from '../../components/HeaderContainer';
+import { Navbar } from '../../components/Navbar';
+
 
 export const screenOptions = {
   headerShown: false,   
@@ -119,6 +121,7 @@ export default function PaqueteDetalle() {
       >
         <Text style={styles.linkText}>Ver recorrido en Google Maps</Text>
       </TouchableOpacity>
+      <Navbar></Navbar>
     </ScrollView>
   );
 }
@@ -147,6 +150,7 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     shadowOffset: { height: 2, width: 0 },
     elevation: 4,
+    marginTop:50
   },
   header: {
     flexDirection: 'row',

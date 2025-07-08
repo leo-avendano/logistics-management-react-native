@@ -6,6 +6,8 @@ import { StyleSheet, View } from 'react-native';
 import { Button, IconButton, Surface } from 'react-native-paper';
 import { useToast } from '../../components/ToastProvider';
 import { db } from '../../config/firebaseConfig';
+import { Navbar } from '../../components/Navbar';
+
 
 export default function QRScanner() {
   const navigation = useNavigation();
@@ -78,6 +80,7 @@ export default function QRScanner() {
           />
         </View>
       </CameraView>
+      <Navbar></Navbar>
     </Surface>
   );
 }

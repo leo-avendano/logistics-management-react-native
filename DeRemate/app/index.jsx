@@ -23,6 +23,11 @@ import { NetworkUtils } from '../utils/NetworkUtils';
 import { useToast } from '../components/ToastProvider';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import { LogBox } from 'react-native';
+
+LogBox.ignoreLogs([
+  'expo-notifications: Android Push notifications (remote notifications) functionality provided by expo-notifications was removed from Expo Go with the release of SDK 53.'
+]);
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -122,7 +127,8 @@ export default function LoginScreen() {
         await auth.signOut();
         return;
       }
-      await saveExpoPushToken(user.uid);
+      
+      //await saveExpoPushToken(user.uid);
 
       // Success feedback
       showToast('¡Bienvenido de vuelta!', 'success', 2000);

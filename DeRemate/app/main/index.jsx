@@ -116,9 +116,9 @@ export default function MainScreen() {
 
 
           </ScrollView>
-          <Navbar/>
-        </>
-      )}
+          </>
+        )}
+      <Navbar/>
     </View>
   );
 }

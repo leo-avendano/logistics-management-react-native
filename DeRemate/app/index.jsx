@@ -12,7 +12,7 @@ import {
   Dimensions,
   Animated
 } from 'react-native';
-import { router } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../config/firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
@@ -47,8 +47,9 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [inputErrors, setInputErrors] = useState({});
   const shakeAnimation = new Animated.Value(0);
-  
+
   const { showToast } = useToast();
+  const navigation = useNavigation();
 
   useEffect(() => {  // para tener el token
   async function registerForPushNotificationsAsync() {
@@ -79,13 +80,13 @@ export default function LoginScreen() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => { // verifica antes si el user esta logueado y verificado
       if (user && user.emailVerified) {
-        router.replace('/main');
+        navigation.replace('Main');
       }
       setInitialLoading(false);
     });
 
     return unsubscribe;
-  }, []);
+  }, [navigation]);
 
   const shakeInputs = () => {
     Animated.sequence([
@@ -102,7 +103,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     clearErrors();
-    
+
     const validation = ValidationUtils.validateLoginForm(email, password);
     if (!validation.isValid) {
       setInputErrors({ general: true });
@@ -132,26 +133,26 @@ export default function LoginScreen() {
 
       // Success feedback
       showToast('¡Bienvenido de vuelta!', 'success', 2000);
-      router.replace('/main');
+      navigation.replace('Main');
     } catch (error) {
       console.log('🔐 Authentication Error Details:');
       console.log('Error Code:', error.code);
       console.log('Error Message:', error.message);
-      
+
       const errorMessage = getErrorMessage(error.code || 'unknown');
       console.log('User-friendly message:', errorMessage);
-      
+
       // Set visual error state for inputs
-      setInputErrors({ 
+      setInputErrors({
         email: error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential',
         password: error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential',
         general: true
       });
-      
+
       // Make sure we have a valid error message
       const finalMessage = errorMessage || 'Error de autenticación. Verifica tus credenciales.';
       console.log('Showing toast with message:', finalMessage);
-      
+
       showToast(finalMessage, 'error');
       shakeInputs();
     } finally {
@@ -166,8 +167,6 @@ export default function LoginScreen() {
   const handleAppleSignIn = () => {
     showToast('Funcionalidad de Apple Sign-In en desarrollo', 'info');
   };
-
-
 
   if (initialLoading) {
     return (
@@ -194,9 +193,9 @@ export default function LoginScreen() {
           <Text style={styles.subtitle}>Ingresa tu email y contraseña para continuar</Text>
 
           {/* Email Input */}
-          <Animated.View 
+          <Animated.View
             style={[
-              styles.inputCard, 
+              styles.inputCard,
               inputErrors.email && styles.inputError,
               { transform: [{ translateX: shakeAnimation }] }
             ]}
@@ -216,9 +215,9 @@ export default function LoginScreen() {
           </Animated.View>
 
           {/* Password Input */}
-          <Animated.View 
+          <Animated.View
             style={[
-              styles.inputCard, 
+              styles.inputCard,
               inputErrors.password && styles.inputError,
               { transform: [{ translateX: shakeAnimation }] }
             ]}
@@ -249,7 +248,7 @@ export default function LoginScreen() {
           </Animated.View>
 
           {/* Login Button */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.loginButton, loading && styles.buttonDisabled]}
             onPress={handleLogin}
             disabled={loading}
@@ -281,22 +280,20 @@ export default function LoginScreen() {
           </TouchableOpacity>
 
           {/* Recovery Link */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.linkButton}
-            onPress={() => router.push('/recover')}
+            onPress={() => navigation.push('Recover')}
           >
             <Text style={styles.linkText}>¿Olvidaste tu contraseña?</Text>
           </TouchableOpacity>
 
           {/* Register Link */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.linkButton}
-            onPress={() => router.push('/register')}
+            onPress={() => navigation.push('Register')}
           >
             <Text style={styles.linkText}>¿No tienes cuenta? Regístrate</Text>
           </TouchableOpacity>
-
-
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

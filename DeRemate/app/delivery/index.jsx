@@ -8,11 +8,13 @@ import {
   FlatList
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 import { HeaderContainer } from '../../components/HeaderContainer';
 import { Loading } from '../../components/Loading';
 import { getRutasPaquetesEnProgreso } from '../../services/firebaseService';
 import { COLORS_ } from '../../constants/Colors'
+import { Navbar } from '../../components/Navbar';
+import { BackButton } from '../../components/BackButton';
 
 const { width, height } = Dimensions.get('window');
 
@@ -20,7 +22,7 @@ export default function InProgressOrdersScreen() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const router = useRouter();
+  const navigation = useNavigation();
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -40,8 +42,12 @@ export default function InProgressOrdersScreen() {
   const renderItem = ({ item }) => (
     <TouchableOpacity
       style={styles.orderCard}
-      onPress={() => router.replace({ pathname: '/delivery/confirmation',
-        params: { previousScreen: '/delivery', uuid: item.uuid } })}
+      onPress={() =>
+        navigation.replace('DeliveryConfirmation', {
+          previousScreen: 'Delivery',
+          uuid: item.uuid,
+        })
+      }
     >
       <View style={styles.orderHeader}>
         <Text style={styles.orderTitle}>Pedido: {item.uuid}</Text>
@@ -68,6 +74,7 @@ export default function InProgressOrdersScreen() {
   return (
     <View style={styles.container}>
       <HeaderContainer>
+        <BackButton/>
         <View style={styles.logoContainer}>
           <Ionicons name="navigate-outline" size={40} color={COLORS_.primary} />
           <Text style={styles.logoText}>Mis Pedidos en Progreso</Text>
@@ -83,6 +90,7 @@ export default function InProgressOrdersScreen() {
           <Text style={styles.emptyText}>No tienes pedidos en progreso.</Text>
         }
       />
+      <Navbar/>
     </View>
   );
 }

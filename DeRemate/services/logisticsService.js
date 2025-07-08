@@ -87,7 +87,6 @@ class LogisticsService {
       throw error;
     }
   }
-
   async setRouteInProgress(routeUUID) {
   try {
     const controller = new AbortController();

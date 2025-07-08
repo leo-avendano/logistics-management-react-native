@@ -1,80 +1,70 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useLocalSearchParams } from 'expo-router';
 import { doc, getDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  Linking,
   ScrollView,
-  Dimensions,
-  Animated
 } from 'react-native';
 import { logisticsService } from '../../services/logisticsService';
 import { useToast } from '../../components/ToastProvider';
 import { openGoogleMaps } from '../../services/openMapsService';
-
-
-
-
-
 import { db } from '../../config/firebaseConfig';
+import { useRoute } from '@react-navigation/native';
+import { HeaderContainer } from '../../components/HeaderContainer';
+import { Navbar } from '../../components/Navbar';
+
 
 export const screenOptions = {
   headerShown: false,   
 };
 
 export default function PaqueteDetalle() {
-
-const { id } = useLocalSearchParams();
+  const route = useRoute();
+  const { id } = route.params || {};
   const [paquete, setPaquete] = useState(null);
   const [ruta, setRuta] = useState(null);
   const [coordenadas, setCoordenadas] = useState(null);
   const [loading, setLoading] = useState(true);
 
-
   useEffect(() => {
-  const fetchPaquete = async () => {
-    setLoading(true);
-    try {
-      const paqueteRef = doc(db, 'Paquete', id);
-      const paqueteSnap = await getDoc(paqueteRef);
+    const fetchPaquete = async () => {
+      setLoading(true);
+      try {
+        const paqueteRef = doc(db, 'Paquete', id);
+        const paqueteSnap = await getDoc(paqueteRef);
 
-      if (paqueteSnap.exists()) {
-        const data = paqueteSnap.data();
-        setPaquete(data);
-        const rutaRef = data.rutaRef;
-        setRuta(rutaRef);
+        if (paqueteSnap.exists()) {
+          const data = paqueteSnap.data();
+          setPaquete(data);
+          const rutaRef = data.rutaRef;
+          setRuta(rutaRef);
 
-        const rutaRefDoc = doc(db, 'Ruta', rutaRef);
-        const rutaSnap = await getDoc(rutaRefDoc);
+          const rutaRefDoc = doc(db, 'Ruta', rutaRef);
+          const rutaSnap = await getDoc(rutaRefDoc);
 
-        if (rutaSnap.exists()) {
-          const rutaData = rutaSnap.data();
-          const { lat, lon } = rutaData.destino;
-          setCoordenadas({ lat, lon });
+          if (rutaSnap.exists()) {
+            const rutaData = rutaSnap.data();
+            const { lat, lon } = rutaData.destino;
+            setCoordenadas({ lat, lon });
+          }
+        } else {
+          console.log('No se encontró el paquete');
         }
-      } else {
-        console.log('No se encontró el paquete');
+      } catch (error) {
+        console.error('Error al buscar el paquete:', error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error al buscar el paquete:', error);
-    } finally {
-      setLoading(false);
+    };
+
+    if (id) {
+      fetchPaquete();
     }
-  };
-
-  if (id) {
-    fetchPaquete();
-  }
-}, [id]);
-
+  }, [id]);
 
   if (loading) {
     return (
@@ -97,7 +87,7 @@ const { id } = useLocalSearchParams();
     <ScrollView contentContainerStyle={styles.scroll}>
       <View style={styles.card}>
         {/* Cabecera */}
-        <View style={styles.header}>
+        <HeaderContainer>
           <MaterialCommunityIcons
             name="cube"
             size={48}
@@ -108,7 +98,7 @@ const { id } = useLocalSearchParams();
             <Text style={styles.title}>{paquete.nombre}</Text>
             <Text style={styles.subtitle}>{paquete.descripcion}</Text>
           </View>
-        </View>
+        </HeaderContainer>
 
         <View style={styles.divider} />
 
@@ -125,13 +115,13 @@ const { id } = useLocalSearchParams();
         />
       </View>
 
-       <TouchableOpacity 
-                  style={styles.buttonContainer}
-                  onPress={() => openGoogleMaps(coordenadas)}
-                  >
-                    <Text style={styles.linkText}>Ver recorrido en Google Maps</Text>
-        </TouchableOpacity>
-
+      <TouchableOpacity 
+        style={styles.buttonContainer}
+        onPress={() => openGoogleMaps(coordenadas)}
+      >
+        <Text style={styles.linkText}>Ver recorrido en Google Maps</Text>
+      </TouchableOpacity>
+      <Navbar></Navbar>
     </ScrollView>
   );
 }
@@ -144,7 +134,6 @@ function InfoRow({ label, value }) {
     </View>
   );
 }
-
 
 const styles = StyleSheet.create({
   scroll: {
@@ -161,6 +150,7 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     shadowOffset: { height: 2, width: 0 },
     elevation: 4,
+    marginTop:50
   },
   header: {
     flexDirection: 'row',

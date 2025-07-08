@@ -6,7 +6,7 @@ import {
   StyleSheet,
   Dimensions
 } from 'react-native';
-import { router } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -15,6 +15,7 @@ const COOLDOWN_TIME_MS = 30000; // 30 seconds
 
 export default function MailCooldownScreen() {
   const [remainingTime, setRemainingTime] = useState(30);
+  const navigation = useNavigation();
 
   useEffect(() => {
     const calculateRemainingTime = async () => {
@@ -75,7 +76,7 @@ export default function MailCooldownScreen() {
       {/* Continue Button */}
       <TouchableOpacity 
         style={styles.continueButton}
-        onPress={() => router.replace('/')}
+        onPress={() => navigation.replace('Login')}
       >
         <Text style={styles.continueButtonText}>VOLVER AL INICIO</Text>
       </TouchableOpacity>
@@ -155,4 +156,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#000',
   },
-}); 
+});

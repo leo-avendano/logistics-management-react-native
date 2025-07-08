@@ -12,7 +12,7 @@ import {
   Dimensions,
   Animated
 } from 'react-native';
-import { router } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from 'firebase/auth';
 import { auth } from '../../config/firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,6 +22,7 @@ import { useToast } from '../../components/ToastProvider';
 const { width } = Dimensions.get('window');
 
 export default function RegisterScreen() {
+  const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -111,7 +112,7 @@ export default function RegisterScreen() {
       
       // Navigate after a short delay to let user read the message
       setTimeout(() => {
-        router.push('/confirmation');
+        navigation.navigate('Confirmation');
       }, 1000);
       
     } catch (error) {
@@ -261,7 +262,7 @@ export default function RegisterScreen() {
           {/* Login Link */}
           <TouchableOpacity 
             style={styles.linkButton}
-            onPress={() => router.back()}
+            onPress={() => navigation.goBack()}
           >
             <Text style={styles.linkText}>¿Ya tienes cuenta? Inicia sesión</Text>
           </TouchableOpacity>
@@ -390,4 +391,4 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 4,
   },
-}); 
+});

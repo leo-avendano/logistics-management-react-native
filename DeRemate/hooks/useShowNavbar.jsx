@@ -16,7 +16,6 @@ export function NavbarProvider({ children }) {
 
 export function useShowNavbar() {
   const context = useContext(NavbarContext);
-  
   if (!context) {
     throw new Error('useShowNavbar debe usarse dentro de NavbarProvider');
   }

@@ -2,16 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { View, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { signOut, onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../config/firebaseConfig';
-import { useRouter, useSegments } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useToast } from './ToastProvider';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 export const Navbar = () => {
-  const router = useRouter();
-  const segments = useSegments();
-  const currentRoute = `/${segments.join('/')}`;
+  const navigation = useNavigation();
+  const route = useRoute();
   const [user, setUser] = useState(null);
-  
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -21,14 +19,14 @@ export const Navbar = () => {
     return () => unsubscribe();
   }, []);
 
-  if (!user) return;
-  if (!auth.currentUser) return;
+  if (!user) return null;
+  if (!auth.currentUser) return null;
 
   const handleLogout = async () => {
     try {
       await signOut(auth);
       showToast('👋 Sesión cerrada correctamente', 'success', 2000);
-      router.replace('/');
+      navigation.replace('Login');
     } catch (error) {
       console.error('Logout error:', error);
       showToast('Error al cerrar sesión. Intenta nuevamente.', 'error');
@@ -40,56 +38,28 @@ export const Navbar = () => {
       'Cerrar Sesión',
       '¿Estás seguro de que quieres cerrar sesión?',
       [
-        {
-          text: 'Cancelar',
-          style: 'cancel',
-        },
-        {
-          text: 'Cerrar Sesión',
-          onPress: handleLogout,
-          style: 'destructive',
-        },
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Cerrar Sesión', onPress: handleLogout, style: 'destructive' },
       ]
     );
   };
 
   const handleNavigation = (screen) => {
-    const targetRoute = `/${screen}`;
-    if (currentRoute === targetRoute) return;
-    if (screen === 'index') {
+    if (route.name == screen) return;
+    if (screen === 'Logout') {
       confirmLogout();
       return;
     }
-    router.replace(targetRoute);
+
+    navigation.replace(screen);
   };
 
   const buttons = [
-    { 
-      id: 1, 
-      name: 'home-outline',
-      action: () => handleNavigation('main') 
-    },
-    { 
-      id: 2, 
-      name: 'location-outline', 
-      action: () => handleNavigation('routes'),
-    },
-    { 
-      id: 3, 
-      name: 'qr-code-outline', 
-      action: () => handleNavigation('qr-scanner'),
-      isQr: true,
-    },
-    { 
-      id: 4, 
-      name: 'calendar-outline', 
-      action: () => handleNavigation('record')
-    },
-    { 
-      id: 5, 
-      name: 'exit-outline', 
-      action: () => handleNavigation('index') 
-    },
+    { id: 1, name: 'home-outline', action: () => handleNavigation('Main') },
+    { id: 2, name: 'location-outline', action: () => handleNavigation('Routes') },
+    { id: 3, name: 'qr-code-outline', action: () => handleNavigation('QrScanner'), isQr: true },
+    { id: 4, name: 'calendar-outline', action: () => handleNavigation('Record') },
+    { id: 5, name: 'exit-outline', action: () => handleNavigation('Logout') },
   ];
 
   return (
@@ -98,8 +68,7 @@ export const Navbar = () => {
         <TouchableOpacity
           key={button.id}
           style={button.isQr ? styles.buttonQr : styles.button}
-          onPress={button.disabled ? null : button.action}
-          disabled={button.disabled}
+          onPress={button.action}
         >
           <Ionicons name={button.name} size={button.isQr ? 48 : 26} color='#ffffff'/>
         </TouchableOpacity>
@@ -119,10 +88,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     height: 62,
     backgroundColor: '#FFC107',
-    paddingHorizontal: 20,
+    paddingHorizontal: 25,
     zIndex: 120,
     paddingBottom: 12,
-    paddingHorizontal: 25,
   },
   button: {
     alignItems: 'center',

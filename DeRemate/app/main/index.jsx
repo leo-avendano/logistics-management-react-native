@@ -1,20 +1,58 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
-  Alert,
-  Dimensions
+  Dimensions,
+  ScrollView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { getRutasPaquetesEnProgreso } from '../../services/firebaseService';
 import { useRouter } from 'expo-router';
-
 
 const { width } = Dimensions.get('window');
 
 export default function MainScreen() {
   const router = useRouter();
+  const [hayRutasEnProgreso, setHayRutasEnProgreso] = useState(false);
+  const [rutaUnica, setRutaUnica] = useState(null);
+
+useEffect(() => {
+    getRutasPaquetesEnProgreso()
+      .then((rutas) => {
+        if (Array.isArray(rutas) && rutas.length > 0) {
+          setHayRutasEnProgreso(true);
+          if (rutas.length === 1) {
+            setRutaUnica(rutas[0]);
+          } else {
+            setRutaUnica(null);
+          }
+        } else {
+          setHayRutasEnProgreso(false);
+          setRutaUnica(null);
+        }
+      })
+      .catch((err) => {
+        setHayRutasEnProgreso(false);
+        setRutaUnica(null);
+      });
+  }, []);
+
+  const handleConfirmarLlegada = () => {
+    if (rutaUnica) {
+      router.replace({
+        pathname: '/delivery/confirmation',
+        params: { previousScreen: '/main', uuid: rutaUnica.uuid }
+      });
+    } else {
+      router.replace({
+        pathname: '/delivery',
+        params: { previousScreen: '/main' }
+      });
+    }
+  };
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -35,7 +73,17 @@ export default function MainScreen() {
       </View>
 
       {/* Feature Cards */}
-      <View style={styles.featuresContainer}>
+      <ScrollView style={styles.featuresContainer}>
+        {hayRutasEnProgreso && (
+          <TouchableOpacity style={styles.featureCard}
+            onPress={handleConfirmarLlegada}
+          >
+            <Ionicons name="checkmark-done-outline" size={40} color="#FFC107" />
+            <Text style={styles.featureTitle}>Confirmar llegada</Text>
+            <Text style={styles.featureDescription}>Confirma la llegada de tus paquetes en progreso</Text>
+          </TouchableOpacity>
+        )}
+
         <TouchableOpacity style={styles.featureCard}
         onPress={() => router.replace('/record')}>
           <Ionicons name="cube-outline" size={40} color="#FFC107" />
@@ -44,12 +92,12 @@ export default function MainScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.featureCard}
-        onPress={() => router.replace('/delivery')}>
+        onPress={() => router.replace('/routes')}>
           <Ionicons name="location-outline" size={40} color="#2196F3" />
           <Text style={styles.featureTitle}>Rutas Disponibles</Text>
           <Text style={styles.featureDescription}>Encuentra las mejores rutas</Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -96,6 +144,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     marginHorizontal: 16,
     marginTop: 20,
+    marginBottom: 20,
     borderRadius: 12,
     shadowColor: '#000',
     shadowOffset: {
@@ -122,6 +171,7 @@ const styles = StyleSheet.create({
   featuresContainer: {
     paddingHorizontal: 16,
     paddingTop: 20,
+    marginBottom: 52,
   },
   featureCard: {
     backgroundColor: '#FFFFFF',

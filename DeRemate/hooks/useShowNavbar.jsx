@@ -1,19 +1,25 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState } from 'react';
+import { Navbar } from '@/components/Navbar';
+
+const NavbarContext = createContext();
+
+export function NavbarProvider({ children }) {
+  const [showNavbar, setShowNavbar] = useState(true);
+  
+  return (
+    <NavbarContext.Provider value={{ showNavbar, setShowNavbar }}>
+      {children}
+      {showNavbar && <Navbar/>}
+    </NavbarContext.Provider>
+  );
+}
 
 export function useShowNavbar() {
-  const [showNavbar, setShowNavbarState] = useState(true);
+  const context = useContext(NavbarContext);
   
-  useEffect(() => {
-    AsyncStorage.getItem('showNavbar').then(value => {
-      if (value !== null) setShowNavbarState(value === 'true');
-    });
-  }, []);
-
-  const setShowNavbar = useCallback(async (value) => {
-    setShowNavbarState(value);
-    await AsyncStorage.setItem('showNavbar', value ? 'true' : 'false');
-  }, []);
-
-  return [showNavbar, setShowNavbar];
+  if (!context) {
+    throw new Error('useShowNavbar debe usarse dentro de NavbarProvider');
+  }
+  
+  return [context.showNavbar, context.setShowNavbar];
 }

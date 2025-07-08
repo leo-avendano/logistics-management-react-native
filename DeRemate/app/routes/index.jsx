@@ -16,6 +16,7 @@ import { getRutasByStatusAndRepartidorWithProduct, getPackageInfo } from '../../
 import { logisticsService } from '../../services/logisticsService';
 import { StatusText } from '../../components/StatusText';
 import { HeaderContainer } from '../../components/HeaderContainer';
+import { Loading } from '../../components/Loading';
 import { useToast } from '../../components/ToastProvider';
 import { openGoogleMaps } from '../../services/openMapsService';
 
@@ -32,7 +33,7 @@ export default function AvailableRoutesScreen() {
   const [showFilters, setShowFilters] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const router = useRouter();
-  
+
   const { showToast } = useToast();
   const filters = ['Todas', 'Disponible', 'Pendiente', 'En Progreso', 'Completado', 'Fallida'];
 
@@ -71,7 +72,7 @@ export default function AvailableRoutesScreen() {
     try {
       setActionLoading(true);
       const userId = logisticsService.getCurrentUserId();
-      
+    
       if (!userId) {
         showToast('Usuario no autenticado. Inicia sesión nuevamente.', 'error');
         return;
@@ -108,9 +109,9 @@ export default function AvailableRoutesScreen() {
     if (!route || !route.estado) {
       return null;
     }
-    
+  
     const estado = route.estado.toLowerCase();
-    
+  
     switch (estado) {
       case 'disponible':
         return {
@@ -157,18 +158,14 @@ export default function AvailableRoutesScreen() {
           <Text style={styles.trackingNumber}>{item.paquete?.nombre || 'No definido'} - {item.uuid || 'N/A'}</Text>
           <StatusText status={item.estado || 'unknown'}/>
         </View>
-        
+      
         <Text style={styles.carrier}>Cliente: {item.cliente || 'N/A'}</Text>
       </TouchableOpacity>
     );
   };
 
   if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#FFC107" />
-      </View>
-    );
+    return <Loading />;
   }
 
   if (error) {
@@ -224,21 +221,21 @@ export default function AvailableRoutesScreen() {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             {detailsLoading ? (
-              <ActivityIndicator size="large" color="#FFC107" />
+              <Loading size="large" color="#FFC107" backgroundColor="transparent" />
             ) : selectedRoute ? (
               <>
                 <Text style={styles.modalTitle}>Detalles de la Ruta</Text>
-                
+              
                 <View style={styles.detailRow}>
                   <Text style={styles.detailLabel}>ID:</Text>
                   <Text style={styles.detailValue}>{selectedRoute.uuid || 'N/A'}</Text>
                 </View>
-                
+              
                 <View style={styles.detailRow}>
                   <Text style={styles.detailLabel}>Cliente:</Text>
                   <Text style={styles.detailValue}>{selectedRoute.cliente || 'N/A'}</Text>
                 </View>
-                
+              
                 {routeDetails && (
                   <>
                     <View style={styles.detailRow}>
@@ -275,7 +272,7 @@ export default function AvailableRoutesScreen() {
                     </TouchableOpacity>
                   ) : null;
                 })()}
-                
+              
                 <TouchableOpacity 
                   style={styles.closeButton}
                   onPress={() => setSelectedRoute(null)}
@@ -298,7 +295,7 @@ export default function AvailableRoutesScreen() {
         <View style={styles.modalContainer}>
           <View style={styles.filterModalContent}>
             <Text style={styles.modalTitle}>Filtrar Rutas</Text>
-            
+          
             <ScrollView style={styles.filterScrollView}>
               {filters.map((filter) => (
                 <TouchableOpacity
@@ -326,7 +323,7 @@ export default function AvailableRoutesScreen() {
                 </TouchableOpacity>
               ))}
             </ScrollView>
-            
+          
             <TouchableOpacity 
               style={styles.closeButton}
               onPress={() => setShowFilters(false)}
@@ -503,12 +500,6 @@ const styles = StyleSheet.create({
     filterOptionTextSelected: {
         color: '#FFF',
         fontWeight: 'bold',
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#ffffff'
     },
     errorContainer: {
         flex: 1,

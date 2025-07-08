@@ -115,6 +115,57 @@ class LogisticsService {
     throw error;
   }
 }
+  async setRouteCompleted(routeUUID) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+      const headers = await this.getAuthHeaders();
+
+      const response = await fetch(`${this.baseURL}${this.endpoints.SET_ROUTE_COMPLETED}`, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({ routeUUID }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`Error al completar la ruta: ${response.status}`);
+      }
+
+      return { success: true, message: 'Ruta completada' };
+    } catch (error) {
+      console.error('Error al completar la ruta:', error);
+      throw error;
+    }
+  }
+
+  async setRouteCancelled(routeUUID) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+      const headers = await this.getAuthHeaders();
+
+      const response = await fetch(`${this.baseURL}${this.endpoints.SET_ROUTE_CANCELLED}`, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({ routeUUID }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`Error al cancelar la ruta: ${response.status}`);
+      }
+
+      return { success: true, message: 'Ruta cancelada' };
+    } catch (error) {
+      console.error('Error al cancelar la ruta:', error);
+      throw error;
+    }
+  }
 
   // Get current authenticated user ID
   getCurrentUserId() {

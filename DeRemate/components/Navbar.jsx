@@ -45,6 +45,10 @@ export const Navbar = () => {
   };
 
   const handleNavigation = (screen) => {
+    navigation.reset({
+      index: 0,
+      routes: [{ name: screen }],
+    });
     if (route.name == screen) return;
     if (screen === 'Logout') {
       confirmLogout();

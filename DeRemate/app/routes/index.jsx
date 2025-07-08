@@ -30,7 +30,7 @@ export default function AvailableRoutesScreen() {
   const [selectedRoute, setSelectedRoute] = useState(null);
   const [routeDetails, setRouteDetails] = useState(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
-  const [currentFilter, setCurrentFilter] = useState('Todas');
+  const [currentFilter, setCurrentFilter] = useState('Disponible');
   const [showFilters, setShowFilters] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 

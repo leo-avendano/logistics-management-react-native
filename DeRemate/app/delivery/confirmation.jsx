@@ -143,7 +143,7 @@ export default function DeliveryConfirmationScreen() {
         </View>
       </HeaderContainer>
       {loading ?(
-        <Loading color={COLORS_.primary} />
+        <Loading backgroundColor='#F5F5F5'/>
       ): error || !routeData ?(
         <View style={[styles.container, styles.centered]}>
           <Text>{error || 'No hay datos de ruta disponibles'}</Text>

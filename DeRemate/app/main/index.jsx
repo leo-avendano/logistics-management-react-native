@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
   featuresContainer: {
     paddingHorizontal: 16,
     paddingTop: 20,
-    marginBottom: 52,
+    marginBottom: 76,
   },
   featureCard: {
     backgroundColor: '#FFFFFF',

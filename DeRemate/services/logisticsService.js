@@ -114,7 +114,7 @@ class LogisticsService {
     throw error;
   }
 }
-  async setRouteCompleted(routeUUID) {
+  async setRouteCompleted(routeUUID, inputUser) {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), this.timeout);
@@ -123,7 +123,7 @@ class LogisticsService {
       const response = await fetch(`${this.baseURL}${this.endpoints.SET_ROUTE_COMPLETED}`, {
         method: 'POST',
         headers: headers,
-        body: JSON.stringify({ routeUUID }),
+        body: JSON.stringify({ routeUUID , inputUser}),
         signal: controller.signal
       });
 

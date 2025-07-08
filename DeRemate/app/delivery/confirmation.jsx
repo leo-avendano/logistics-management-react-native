@@ -6,6 +6,8 @@ import {
   StyleSheet,
   Dimensions,
   Alert,
+  TextInput,
+  Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -23,6 +25,10 @@ export default function DeliveryConfirmationScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [timeoutHandled, setTimeoutHandled] = useState(false);
+  
+  // Estados para el modal de confirmación
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmationNotes, setConfirmationNotes] = useState('');
 
   const navigation = useNavigation();
   const route = useRoute();
@@ -74,34 +80,33 @@ export default function DeliveryConfirmationScreen() {
     loadRouteData();
   }, [routeId]);
 
-  // Confirmar entrega
   const handleConfirmDelivery = () => {
-    Alert.alert(
-      'Confirmar entrega',
-      `¿Está seguro de confirmar la entrega del paquete ${routeData?.uuid}?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Confirmar',
-          onPress: async () => {
-            setLoading(true);
-            try {
-              navigation.goBack()
-              await logisticsService.setRouteCompleted(routeData.uuid);
-              Alert.alert(
-                'Entrega confirmada',
-                'El paquete ha sido entregado exitosamente',
-                [{ text: 'OK' }]
-              );
-            } catch (e) {
-              Alert.alert('Error', 'No se pudo confirmar la entrega.');
-            } finally {
-              setLoading(false);
-            }
-          }
-        }
-      ]
-    );
+    setShowConfirmModal(true);
+  };
+
+  const handleFinalConfirmation = async () => {
+    if (!confirmationNotes.trim()) {
+      Alert.alert('Campo requerido', 'Por favor ingrese el codigo de Confirmacion');
+      return;
+    }
+
+    setShowConfirmModal(false);
+    setLoading(true);
+    
+    try {
+      navigation.goBack();
+      await logisticsService.setRouteCompleted(routeData.uuid, confirmationNotes.trim());
+      Alert.alert(
+        'Entrega confirmada',
+        'El paquete ha sido entregado exitosamente',
+        [{ text: 'OK' }]
+      );
+    } catch (e) {
+      Alert.alert('Error', 'No se pudo confirmar la entrega.');
+    } finally {
+      setLoading(false);
+      setConfirmationNotes('');
+    }
   };
 
   const handleCancelDelivery = () => {
@@ -114,7 +119,7 @@ export default function DeliveryConfirmationScreen() {
           text: 'Si',
           onPress: async () => {
             setLoading(true);
-            navigation.goBack()
+            navigation.goBack();
             try {
               await logisticsService.setRouteCancelled(routeData.uuid);
               Alert.alert(
@@ -142,9 +147,10 @@ export default function DeliveryConfirmationScreen() {
           <Text style={styles.logoText}>Confirmar Entrega</Text>
         </View>
       </HeaderContainer>
-      {loading ?(
+      
+      {loading ? (
         <Loading backgroundColor='#F5F5F5'/>
-      ): error || !routeData ?(
+      ) : error || !routeData ? (
         <View style={[styles.container, styles.centered]}>
           <Text>{error || 'No hay datos de ruta disponibles'}</Text>
           <TouchableOpacity 
@@ -154,64 +160,113 @@ export default function DeliveryConfirmationScreen() {
             <Text style={styles.backButtonText}>Volver</Text>
           </TouchableOpacity>
         </View>
-      ): (<View style={styles.content}>
-        {/* Timer */}
-        <View style={[styles.timerContainer, isTimeRunningOut && styles.timerWarning]}>
-          <Ionicons 
-            name="time-outline" 
-            size={30} 
-            color={isTimeRunningOut ? COLORS_.danger : COLORS_.primary} 
-          />
-          <Text style={[styles.timerText, isTimeRunningOut && styles.timerTextWarning]}>
-            Tiempo restante: {formatTime(timeLeft)}
-          </Text>
-        </View>
-
-        {/* Route Info */}
-        <View style={styles.packageInfo}>
-          <Text style={styles.packageTitle}>Información</Text>
-          <Text style={styles.packageDetail}>Código: {routeData.uuid}</Text>
-          <Text style={styles.packageDetail}>Cliente: {routeData.cliente}</Text>
-          <Text style={styles.packageDetail}>Cliente Nombre: {routeData.cliente_nombre || routeData.cliente}</Text>
-          <Text style={styles.packageDetail}>
-            Descripción Paquete: {routeData.paquete?.descripcion || 'Sin descripción'}
-          </Text>
-          <Text style={styles.packageDetail}>
-            Inicio: {routeData.fechas?.inicioRepartir || 'N/A'}
-          </Text>
-        </View>
-
-        {/* Destination Info */}
-        {routeData.destino && (
-          <View style={styles.packageInfo}>
-            <Text style={styles.packageTitle}>Información de Destino</Text>
-            <Text style={styles.packageDetail}>
-              Detalles: {routeData.destino.detalles || 'Calle N/A - Piso N/A - Dep N/A'}
+      ) : (
+        <View style={styles.content}>
+          {/* Timer */}
+          <View style={[styles.timerContainer, isTimeRunningOut && styles.timerWarning]}>
+            <Ionicons 
+              name="time-outline" 
+              size={30} 
+              color={isTimeRunningOut ? COLORS_.danger : COLORS_.primary} 
+            />
+            <Text style={[styles.timerText, isTimeRunningOut && styles.timerTextWarning]}>
+              Tiempo restante: {formatTime(timeLeft)}
             </Text>
           </View>
-        )}
 
-        {/* Action Buttons */}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={[styles.button, styles.confirmButton]}
-            onPress={handleConfirmDelivery}
-            disabled={timeLeft === 0}
-          >
-            <Ionicons name="checkmark" size={24} color="white" />
-            <Text style={styles.buttonText}>Confirmar Entrega</Text>
-          </TouchableOpacity>
+          {/* Route Info */}
+          <View style={styles.packageInfo}>
+            <Text style={styles.packageTitle}>Información</Text>
+            <Text style={styles.packageDetail}>Código: {routeData.uuid}</Text>
+            <Text style={styles.packageDetail}>Cliente: {routeData.cliente}</Text>
+            <Text style={styles.packageDetail}>Cliente Nombre: {routeData.cliente_nombre || routeData.cliente}</Text>
+            <Text style={styles.packageDetail}>
+              Descripción Paquete: {routeData.paquete?.descripcion || 'Sin descripción'}
+            </Text>
+            <Text style={styles.packageDetail}>
+              Inicio: {routeData.fechas?.inicioRepartir || 'N/A'}
+            </Text>
+          </View>
 
-          <TouchableOpacity
-            style={[styles.button, styles.cancelButton]}
-            onPress={handleCancelDelivery}
-            disabled={timeLeft === 0}
-          >
-            <Ionicons name="close" size={24} color="white" />
-            <Text style={styles.buttonText}>Cancelar Entrega</Text>
-          </TouchableOpacity>
+          {/* Destination Info */}
+          {routeData.destino && (
+            <View style={styles.packageInfo}>
+              <Text style={styles.packageTitle}>Información de Destino</Text>
+              <Text style={styles.packageDetail}>
+                Detalles: {routeData.destino.detalles || 'Calle N/A - Piso N/A - Dep N/A'}
+              </Text>
+            </View>
+          )}
+
+          {/* Action Buttons */}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={[styles.button, styles.confirmButton]}
+              onPress={handleConfirmDelivery}
+              disabled={timeLeft === 0}
+            >
+              <Ionicons name="checkmark" size={24} color="white" />
+              <Text style={styles.buttonText}>Confirmar Entrega</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.button, styles.cancelButton]}
+              onPress={handleCancelDelivery}
+              disabled={timeLeft === 0}
+            >
+              <Ionicons name="close" size={24} color="white" />
+              <Text style={styles.buttonText}>Cancelar Entrega</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>)}
+      )}
+
+      {/* Modal de confirmación con input */}
+      <Modal
+        visible={showConfirmModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowConfirmModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Confirmar Entrega</Text>
+            <Text style={styles.modalSubtitle}>
+              Paquete: {routeData?.uuid}
+            </Text>
+            
+            <Text style={styles.inputLabel}>Codigo de Confirmacion</Text>
+            <TextInput
+              style={styles.textInput}
+              value={confirmationNotes}
+              onChangeText={setConfirmationNotes}
+              placeholder="Ej: Entregado a Juan Pérez"
+              autoFocus
+              maxLength={100}
+              returnKeyType="done"
+            />
+            
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalCancelButton]}
+                onPress={() => {
+                  setShowConfirmModal(false);
+                  setConfirmationNotes('');
+                }}
+              >
+                <Text style={styles.modalButtonText}>Cancelar</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalConfirmButton]}
+                onPress={handleFinalConfirmation}
+              >
+                <Text style={styles.modalButtonText}>Confirmar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -282,16 +337,6 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     color: COLORS_.textSecondary,
   },
-  subSection: {
-    marginTop: 10,
-    paddingLeft: 10,
-  },
-  subTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#444',
-    marginBottom: 5,
-  },
   buttonContainer: {
     gap: 15,
     marginBottom: 20,
@@ -326,5 +371,72 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    backgroundColor: 'white',
+    margin: 20,
+    padding: 20,
+    borderRadius: 15,
+    width: width * 0.9,
+    maxHeight: height * 0.7,
+    marginBottom: 120,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 10,
+    color: COLORS_.text,
+  },
+  modalSubtitle: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
+    color: COLORS_.textSecondary,
+  },
+  inputLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+    color: COLORS_.text,
+  },
+  textInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    fontSize: 22, // Más grande
+    height: 48,   // Una sola fila
+    marginBottom: 20,
+    backgroundColor: '#f9f9f9',
+    color: COLORS_.text,
+  },
+  modalButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  modalButton: {
+    flex: 1,
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  modalCancelButton: {
+    backgroundColor: '#6c757d',
+  },
+  modalConfirmButton: {
+    backgroundColor: COLORS_.success,
+  },
+  modalButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

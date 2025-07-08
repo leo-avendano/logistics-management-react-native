@@ -8,8 +8,8 @@ export const APP_CONFIG = {
       ASSIGN_ROUTE: '/route/assign',
       UNASSIGN_ROUTE: '/route/unassign',
       SET_ROUTE_IN_PROGRESS: '/startPendingRoute', // si usás baseURL directo
-      SET_ROUTE_DONE: '/route/done',
-      SET_ROUTE_CANCELED: '/route/canceled',
+      SET_ROUTE_DONE: '/confirmPackageDelivery',
+      SET_ROUTE_CANCELED: '/cancelRoute',
       HELLO: '/hello'
     }
   },

@@ -25,7 +25,6 @@ import PaqueteScreen from './app/paquete/[id]';
 import ConfirmationScreen from './app/confirmation/index';
 import DeliveryScreen from './app/delivery/index';
 import DeliveryConfirmationScreen from './app/delivery/confirmation';
-import TestNotificationsScreen from './app/test-notifications/index';
 
 const Stack = createStackNavigator();
 
@@ -100,7 +99,6 @@ export default function App() {
                                 <Stack.Screen name="Confirmation" component={ConfirmationScreen} />
                                 <Stack.Screen name="Delivery" component={DeliveryScreen} />
                                 <Stack.Screen name="DeliveryConfirmation" component={DeliveryConfirmationScreen} />
-                                <Stack.Screen name="TestNotifications" component={TestNotificationsScreen} />
                             </Stack.Navigator>
                             <StatusBar style="dark" />
                         </NavigationContainer>

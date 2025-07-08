@@ -114,15 +114,7 @@ export default function MainScreen() {
               <Text style={styles.featureDescription}>Encuentra las mejores rutas</Text>
             </TouchableOpacity>
 
-            {/* Testing Button - Solo en desarrollo */}
-            {__DEV__ && (
-              <TouchableOpacity style={[styles.featureCard, styles.testCard]}
-                onPress={() => navigation.navigate('TestNotifications')}>
-                <Ionicons name="notifications-outline" size={40} color="#FF9800" />
-                <Text style={styles.featureTitle}>Test Notificaciones</Text>
-                <Text style={styles.featureDescription}>Probar push notifications</Text>
-              </TouchableOpacity>
-            )}
+
           </ScrollView>
           <Navbar/>
         </>
@@ -223,10 +215,6 @@ const styles = StyleSheet.create({
     color: '#000',
     marginTop: 12,
     marginBottom: 4,
-  },
-  testCard: {
-    borderColor: '#FF9800',
-    borderWidth: 2,
   },
   featureDescription: {
     fontSize: 14,

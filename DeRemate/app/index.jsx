@@ -52,7 +52,7 @@ export default function LoginScreen() {
     });
 
     return unsubscribe;
-  }, [navigation]);
+  }, []);
 
   const shakeInputs = () => {
     Animated.sequence([
